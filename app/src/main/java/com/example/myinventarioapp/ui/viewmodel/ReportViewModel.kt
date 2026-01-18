@@ -94,22 +94,34 @@ class ReportViewModel : ViewModel() {
         }
     }
     private val ORDEN_TALLAS_TEXTO = listOf(
-        "XS",
         "S",
         "M",
         "L",
         "XL",
         "2XL",
         "3XL",
-        "4XL"
+        "4XL",
+        "5XL",
+        "6XL"
     )
-
     private fun normalizarTalla(talla: String?): String =
         talla?.trim()?.uppercase() ?: ""
 
     // Detecta si la talla es numérica (pantalones)
     private fun esTallaNumerica(talla: String): Boolean =
         talla.toIntOrNull() != null
+
+
+    private val TALLAS_LETRA = listOf("S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL")
+    private val TALLAS_NUMERO = (26..42).map { it.toString() } // pantalones
+    // Decide la lista de tallas según tipo de prenda
+    private fun obtenerTallasPorTipo(tipo: String): List<String> {
+        return when (tipo.lowercase()) {
+            "camisa", "polo", "chaqueta" -> TALLAS_LETRA
+            "pantalon", "jeans" -> TALLAS_NUMERO
+            else -> listOf("ÚNICA")
+        }
+    }
     fun saveExcelWithColorDetails(
         context: Context,
         fileName: String,
@@ -121,234 +133,130 @@ class ReportViewModel : ViewModel() {
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val file = File(downloadsDir, fileName)
         file.parentFile?.mkdirs()
-        //AQUÍ SE ARMA EL EXCEL
+
+        //*************** AQUÍ SE ARMA EL EXCEL*************
         try {
             FileOutputStream(file).use { fos ->
 
+                val productosPorTipo = productos.groupBy {it.tipo}
                 val workbook = XSSFWorkbook()
-                val sheet = workbook.createSheet("Inventario")
+                for ((tipo, listaTipo) in productosPorTipo) {
+                    val sheet = workbook.createSheet(tipo.uppercase())
+                    val tallasFinales = obtenerTallasPorTipo(tipo)
+                    val startTallaCol = 3
+                    val endTallaCol = startTallaCol + tallasFinales.size - 1
+                    val colStock = endTallaCol + 1
+                    val colCosto = endTallaCol + 2
 
-                // --- ESTILO ENCABEZADOS ---
-                val headerStyle = workbook.createCellStyle().apply {
-                    alignment = HorizontalAlignment.CENTER
-                    verticalAlignment = VerticalAlignment.CENTER
-                    wrapText= true
-                    setBorderBottom(BorderStyle.THIN)
-                    setBorderTop(BorderStyle.THIN)
-                    setBorderLeft(BorderStyle.THIN)
-                    setBorderRight(BorderStyle.THIN)
-                }
-
-                val boldFont = workbook.createFont().apply {
-                    bold = true
-                }
-                headerStyle.setFont(boldFont)
-                // AJUSTAR ANCHO DE COLUMNAS (en caracteres)
-                sheet.setColumnWidth(0, 20 * 256) // Modelo
-                sheet.setColumnWidth(1, 25 * 256) // Nombre
-                sheet.setColumnWidth(2, 15 * 256) // Color
-                // AGRUPAR POR MODELO
-                val groupByModel = productos.groupBy { it.modeloCod }
-
-                var rowIndex = 0
-
-                val maxTallas = groupByModel.values.maxOf { lista ->
-                    lista.map { normalizarTalla(it.talla) }
-                        .filter { it.isNotBlank() }
-                        .distinct()
-                        .size
-                }
-                val startTallaCol = 3
-                val endTallaColGlobal = startTallaCol + maxTallas - 1
-                val colStockGlobal = endTallaColGlobal + 1
-                val colCostoGlobal = endTallaColGlobal + 2
-
-                // TALLAS
-                for (i in startTallaCol..endTallaColGlobal) {
-                    sheet.setColumnWidth(i, 10 * 256)
-                }
-
-                // STOCK y COSTO
-                sheet.setColumnWidth(colStockGlobal, 10 * 256)
-                sheet.setColumnWidth(colCostoGlobal, 18 * 256)
-
-                for ((modelo, listaProductos) in groupByModel) {
-                    Log.d(
-                        "EXCEL_DEBUG",
-                        "Modelo: $modelo | Items: ${listaProductos.size}"
-                    )
-                    // 🔹 TALLAS ÚNICAS NORMALIZADAS
-                    val tallasUnicas = listaProductos
-                        .map { normalizarTalla(it.talla) }
-                        .filter { it.isNotBlank() }
-                        .distinct()
-
-                    val tallas = when {
-                        // 🟦 PANTALONES → 26,27,...42
-                        tallasUnicas.all { esTallaNumerica(it) } -> {
-                            tallasUnicas
-                                .map { it.toInt() }
-                                .sorted()
-                                .map { it.toString() }
-                        }
-
-                        // 🟩 ROPA → XS,S,M,L,XL...
-                        else -> {
-                            ORDEN_TALLAS_TEXTO.filter { it in tallasUnicas }
-                        }
+                    // Estilo de encabezados
+                    val headerStyle = workbook.createCellStyle().apply {
+                        alignment = HorizontalAlignment.CENTER
+                        verticalAlignment = VerticalAlignment.CENTER
+                        wrapText = true
+                        setBorderBottom(BorderStyle.THIN)
+                        setBorderTop(BorderStyle.THIN)
+                        setBorderLeft(BorderStyle.THIN)
+                        setBorderRight(BorderStyle.THIN)
                     }
+                    val boldFont = workbook.createFont().apply { bold = true }
+                    headerStyle.setFont(boldFont)
 
-                    // 🔒 Sin talla
-                    val tallasFinales = if (tallas.isNotEmpty()) tallas else listOf("ÚNICA")
+                    // Ajustar ancho de columnas
+                    sheet.setColumnWidth(0, 20 * 256) // Modelo
+                    sheet.setColumnWidth(1, 25 * 256) // Nombre
+                    sheet.setColumnWidth(2, 15 * 256) // Color
+                    for (i in startTallaCol..endTallaCol) sheet.setColumnWidth(i, 10 * 256)
+                    sheet.setColumnWidth(colStock, 10 * 256)
+                    sheet.setColumnWidth(colCosto, 18 * 256)
 
-                    Log.d("EXCEL_DEBUG", "Tallas finales: $tallasFinales")
-
-                    Log.d("EXCEL_DEBUG", "Tallas ordenadas: $tallas")
-                    Log.d("EXCEL_DEBUG", "1")
-
-                    // --- ENCABEZADO NIVEL 1 ---
-                    val headerRow1 = sheet.createRow(rowIndex)
-                    val headerRow2 = sheet.createRow(rowIndex + 1)
+                    // --- ENCABEZADOS ---
+                    val headerRow1 = sheet.createRow(0)
+                    val headerRow2 = sheet.createRow(1)
 
                     headerRow1.createCell(0).apply {
                         setCellValue("MODELO")
                         cellStyle = headerStyle
                     }
-                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 0, 0))
+                    sheet.addMergedRegion(CellRangeAddress(0, 1, 0, 0))
 
                     headerRow1.createCell(1).apply {
                         setCellValue("NOMBRE")
                         cellStyle = headerStyle
                     }
-                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 1, 1))
+                    sheet.addMergedRegion(CellRangeAddress(0, 1, 1, 1))
 
                     headerRow1.createCell(2).apply {
                         setCellValue("COLOR")
                         cellStyle = headerStyle
                     }
-                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 2, 2))
+                    sheet.addMergedRegion(CellRangeAddress(0, 1, 2, 2))
 
-                    // --- TÍTULO "TALLAS" ---
-                    Log.d("EXCEL_DEBUG", "2")
-                    val startTallaCol = 3
-                    val tallaCount = tallasFinales.size
-                    val endTallaCol = startTallaCol + tallaCount - 1
-
-                    val colStock = endTallaCol + 1
-                    val colCosto = endTallaCol + 2
-
+                    // Encabezado TALLAS
                     headerRow1.createCell(startTallaCol).apply {
                         setCellValue("TALLAS")
                         cellStyle = headerStyle
                     }
-                    // 🔒 SOLO unir si hay más de una talla
-                    if(tallaCount > 1) {
+                    if (tallasFinales.size > 1) {
                         sheet.addMergedRegion(
-                            CellRangeAddress(
-                                rowIndex,
-                                rowIndex,
-                                startTallaCol,
-                                endTallaCol
-                            )
+                            CellRangeAddress(0, 0, startTallaCol, endTallaCol)
                         )
                     }
 
-                    // --- ENCABEZADO DE TALLAS ---
-                    Log.d("EXCEL_DEBUG", "3")
-                    tallas.forEachIndexed { index, talla ->
+                    // Fila con nombres de tallas
+                    tallasFinales.forEachIndexed { index, talla ->
                         headerRow2.createCell(startTallaCol + index).apply {
                             setCellValue(talla)
                             cellStyle = headerStyle
                         }
                     }
 
-                    // --- COLUMNAS STOCK Y COSTO ---
-                    Log.d("EXCEL_DEBUG", "4")
-//                    val colStock = endTallaCol + 1
-//                    val colCosto = endTallaCol + 2
-
-
-
+                    // STOCK
                     headerRow1.createCell(colStock).apply {
                         setCellValue("STOCK")
                         cellStyle = headerStyle
                     }
-                    sheet.addMergedRegion(
-                        CellRangeAddress(
-                            rowIndex,
-                            rowIndex + 1,
-                            colStock,
-                            colStock
-                        )
-                    )
+                    sheet.addMergedRegion(CellRangeAddress(0, 1, colStock, colStock))
 
+                    // COSTO
                     headerRow1.createCell(colCosto).apply {
-                        setCellValue("COSTO\nTOTAL")
-
+                        setCellValue("COSTO TOTAL")
                         cellStyle = headerStyle
                     }
+                    sheet.addMergedRegion(CellRangeAddress(0, 1, colCosto, colCosto))
 
-                    sheet.addMergedRegion(
-                        CellRangeAddress(
-                            rowIndex,
-                            rowIndex + 1,
-                            colCosto,
-                            colCosto
-                        )
-                    )
+                    // --- LLENAR DATOS ---
+                    var rowIndex = 2
+                    val groupByModel = listaTipo.groupBy { it.modeloCod }
 
-                    rowIndex += 2
+                    for ((modelo, listaProductos) in groupByModel) {
+                        val productosPorColor = listaProductos.groupBy { it.color }
 
-                    // --- AGRUPAR POR COLOR ---
-                    val productosPorColor = listaProductos.groupBy { it.color }
+                        val nombreProducto = listaProductos.first().nombre
+                            .trim()
+                            .split("\\s+".toRegex())
+                            .filter { it.isNotBlank() }
+                            .take(3)
+                            .joinToString(" ")
 
-                    val nombreProducto = listaProductos.first().nombre
-                        .trim()                           // quita espacios al inicio y final
-                        .split("\\s+".toRegex())  // divide por 1 o MÁS espacios
-                        .filter { it.isNotBlank() }       // elimina palabras vacías
-                        .take(3)                      // toma máximo 3 palabras
-                        .joinToString(" ")     // vuelve a unirlas
+                        for ((color, itemsColor) in productosPorColor) {
+                            val row = sheet.createRow(rowIndex++)
+                            row.createCell(0).setCellValue(modelo)
+                            row.createCell(1).setCellValue(nombreProducto)
+                            row.createCell(2).setCellValue(color)
 
-                    for ((color, itemsColor) in productosPorColor) {
-                        Log.d(
-                            "EXCEL_DEBUG",
-                            "Modelo: $modelo | Color: $color | Registros: ${itemsColor.size}"
-                        )
+                            var totalStockColor = 0
+                            tallasFinales.forEachIndexed { i, talla ->
+                                val cantidad = itemsColor.firstOrNull { normalizarTalla(it.talla) == talla }?.stock ?: 0
+                                totalStockColor += cantidad
+                                row.createCell(startTallaCol + i).setCellValue(cantidad.toDouble())
+                            }
 
-                        itemsColor.forEach {
-                            Log.d("EXCEL_DEBUG", "Producto: $it")
+                            val costoTotalColor = itemsColor.sumOf { (it.stock ?: 0) * (it.costo ?: 0.0) }
+                            row.createCell(colStock).setCellValue(totalStockColor.toDouble())
+                            row.createCell(colCosto).setCellValue(costoTotalColor)
                         }
-                        val row = sheet.createRow(rowIndex)
-
-                        row.createCell(0).setCellValue(modelo)
-                        row.createCell(1).setCellValue(nombreProducto)
-                        row.createCell(2).setCellValue(color)
-
-                        var totalStockColor = 0
-
-                        tallas.forEachIndexed { i, talla ->
-                            val cantidad = itemsColor.firstOrNull { it.talla == talla }?.stock ?: 0
-                            totalStockColor += cantidad
-
-                            row.createCell(startTallaCol + i)
-                                .setCellValue(cantidad.toDouble())
-                        }
-
-                        val costoTotalColor = itemsColor.sumOf {
-//                        it.stock * it.costo
-                            val stock = it.stock ?: 0
-                            val costo = it.costo ?: 0.0
-                            stock * costo
-
-                        }
-
-                        row.createCell(colStock).setCellValue(totalStockColor.toDouble())
-                        row.createCell(colCosto).setCellValue(costoTotalColor)
-
-                        rowIndex++
+                        rowIndex++ // espacio entre modelos
                     }
-
-                    rowIndex++ // espacio entre modelos
                 }
                 Log.d("EXCEL_DEBUG", "Escribiendo archivo Excel...")
                 workbook.write(fos)
@@ -362,6 +270,261 @@ class ReportViewModel : ViewModel() {
             Log.e("EXCEL_ERROR", "Error generando Excel", e)
         }
     }
+//    fun saveExcelWithColorDetails(
+//        context: Context,
+//        fileName: String,
+//        productos: List<Producto>
+//    ) {
+//        Log.d("EXCEL_DEBUG", "Iniciando Excel: $fileName")
+//        Log.d("EXCEL_DEBUG", "Total productos recibidos: ${productos.size}")
+//        val downloadsDir =
+//            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+//        val file = File(downloadsDir, fileName)
+//        file.parentFile?.mkdirs()
+//
+//        //*************** AQUÍ SE ARMA EL EXCEL*************
+//        try {
+//            FileOutputStream(file).use { fos ->
+////                val groupbytype = productos.groupBy {it.tipo}
+//
+//                val workbook = XSSFWorkbook()
+//                val sheet = workbook.createSheet("Inventario")
+//
+//                // --- ESTILO ENCABEZADOS ---
+//                val headerStyle = workbook.createCellStyle().apply {
+//                    alignment = HorizontalAlignment.CENTER
+//                    verticalAlignment = VerticalAlignment.CENTER
+//                    wrapText= true
+//                    setBorderBottom(BorderStyle.THIN)
+//                    setBorderTop(BorderStyle.THIN)
+//                    setBorderLeft(BorderStyle.THIN)
+//                    setBorderRight(BorderStyle.THIN)
+//                }
+//
+//                val boldFont = workbook.createFont().apply {
+//                    bold = true
+//                }
+//                headerStyle.setFont(boldFont)
+//
+//                // AJUSTAR ANCHO DE COLUMNAS (en caracteres)
+//                sheet.setColumnWidth(0, 20 * 256) // Modelo
+//                sheet.setColumnWidth(1, 25 * 256) // Nombre
+//                sheet.setColumnWidth(2, 15 * 256) // Color
+//                // AGRUPAR POR MODELO
+//                val groupByModel = productos.groupBy { it.modeloCod }
+//
+//                var rowIndex = 0
+//
+//                val maxTallas = groupByModel.values.maxOf { lista ->
+//                    lista.map { normalizarTalla(it.talla) }
+//                        .filter { it.isNotBlank() }
+//                        .distinct()
+//                        .size
+//                }
+//                val startTallaCol = 3
+//                val endTallaColGlobal = startTallaCol + maxTallas - 1
+//                val colStockGlobal = endTallaColGlobal + 1
+//                val colCostoGlobal = endTallaColGlobal + 2
+//
+//                // TALLAS
+//                for (i in startTallaCol..endTallaColGlobal) {
+//                    sheet.setColumnWidth(i, 10 * 256)
+//                }
+//
+//                // STOCK y COSTO
+//                sheet.setColumnWidth(colStockGlobal, 10 * 256)
+//                sheet.setColumnWidth(colCostoGlobal, 18 * 256)
+//
+//                for ((modelo, listaProductos) in groupByModel) {
+//                    Log.d(
+//                        "EXCEL_DEBUG",
+//                        "Modelo: $modelo | Items: ${listaProductos.size}"
+//                    )
+//                    // 🔹 TALLAS ÚNICAS NORMALIZADAS
+//                    val tallasUnicas = listaProductos
+//                        .map { normalizarTalla(it.talla) }
+//                        .filter { it.isNotBlank() }
+//                        .distinct()
+//
+//                    val tallas = when {
+//                        // 🟦 PANTALONES → 26,27,...42
+//                        tallasUnicas.all { esTallaNumerica(it) } -> {
+//                            tallasUnicas
+//                                .map { it.toInt() }
+//                                .sorted()
+//                                .map { it.toString() }
+//                        }
+//
+//                        // 🟩 ROPA → XS,S,M,L,XL...
+//                        else -> {
+//                            ORDEN_TALLAS_TEXTO.filter { it in tallasUnicas }
+//                        }
+//                    }
+//
+//                    // 🔒 Sin talla
+//                    val tallasFinales = if (tallas.isNotEmpty()) tallas else listOf("ÚNICA")
+//
+//                    Log.d("EXCEL_DEBUG", "Tallas finales: $tallasFinales")
+//
+//                    Log.d("EXCEL_DEBUG", "Tallas ordenadas: $tallas")
+//                    Log.d("EXCEL_DEBUG", "1")
+//
+//                    // --- ENCABEZADO NIVEL 1 ---
+//                    val headerRow1 = sheet.createRow(rowIndex)
+//                    val headerRow2 = sheet.createRow(rowIndex + 1)
+//
+//                    headerRow1.createCell(0).apply {
+//                        setCellValue("MODELO")
+//                        cellStyle = headerStyle
+//                    }
+//                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 0, 0))
+//
+//                    headerRow1.createCell(1).apply {
+//                        setCellValue("NOMBRE")
+//                        cellStyle = headerStyle
+//                    }
+//                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 1, 1))
+//
+//                    headerRow1.createCell(2).apply {
+//                        setCellValue("COLOR")
+//                        cellStyle = headerStyle
+//                    }
+//                    sheet.addMergedRegion(CellRangeAddress(rowIndex, rowIndex + 1, 2, 2))
+//
+//                    // --- TÍTULO "TALLAS" ---
+//                    Log.d("EXCEL_DEBUG", "2")
+//                    val startTallaCol = 3
+//                    val tallaCount = tallasFinales.size
+//                    val endTallaCol = startTallaCol + tallaCount - 1
+//
+//                    val colStock = endTallaCol + 1
+//                    val colCosto = endTallaCol + 2
+//
+//                    headerRow1.createCell(startTallaCol).apply {
+//                        setCellValue("TALLAS")
+//                        cellStyle = headerStyle
+//                    }
+//                    // 🔒 SOLO unir si hay más de una talla
+//                    if(tallaCount > 1) {
+//                        sheet.addMergedRegion(
+//                            CellRangeAddress(
+//                                rowIndex,
+//                                rowIndex,
+//                                startTallaCol,
+//                                endTallaCol
+//                            )
+//                        )
+//                    }
+//
+//                    // --- ENCABEZADO DE TALLAS ---
+//                    Log.d("EXCEL_DEBUG", "3")
+//                    tallas.forEachIndexed { index, talla ->
+//                        headerRow2.createCell(startTallaCol + index).apply {
+//                            setCellValue(talla)
+//                            cellStyle = headerStyle
+//                        }
+//                    }
+//
+//                    // --- COLUMNAS STOCK Y COSTO ---
+//                    Log.d("EXCEL_DEBUG", "4")
+////                    val colStock = endTallaCol + 1
+////                    val colCosto = endTallaCol + 2
+//
+//
+//
+//                    headerRow1.createCell(colStock).apply {
+//                        setCellValue("STOCK")
+//                        cellStyle = headerStyle
+//                    }
+//                    sheet.addMergedRegion(
+//                        CellRangeAddress(
+//                            rowIndex,
+//                            rowIndex + 1,
+//                            colStock,
+//                            colStock
+//                        )
+//                    )
+//
+//                    headerRow1.createCell(colCosto).apply {
+//                        setCellValue("COSTO\nTOTAL")
+//
+//                        cellStyle = headerStyle
+//                    }
+//
+//                    sheet.addMergedRegion(
+//                        CellRangeAddress(
+//                            rowIndex,
+//                            rowIndex + 1,
+//                            colCosto,
+//                            colCosto
+//                        )
+//                    )
+//
+//                    rowIndex += 2
+//
+//                    // --- AGRUPAR POR COLOR ---
+//                    val productosPorColor = listaProductos.groupBy { it.color }
+//
+//                    val nombreProducto = listaProductos.first().nombre
+//                        .trim()                           // quita espacios al inicio y final
+//                        .split("\\s+".toRegex())  // divide por 1 o MÁS espacios
+//                        .filter { it.isNotBlank() }       // elimina palabras vacías
+//                        .take(3)                      // toma máximo 3 palabras
+//                        .joinToString(" ")     // vuelve a unirlas
+//
+//                    for ((color, itemsColor) in productosPorColor) {
+//                        Log.d(
+//                            "EXCEL_DEBUG",
+//                            "Modelo: $modelo | Color: $color | Registros: ${itemsColor.size}"
+//                        )
+//
+//                        itemsColor.forEach {
+//                            Log.d("EXCEL_DEBUG", "Producto: $it")
+//                        }
+//                        val row = sheet.createRow(rowIndex)
+//
+//                        row.createCell(0).setCellValue(modelo)
+//                        row.createCell(1).setCellValue(nombreProducto)
+//                        row.createCell(2).setCellValue(color)
+//
+//                        var totalStockColor = 0
+//
+//                        tallas.forEachIndexed { i, talla ->
+//                            val cantidad = itemsColor.firstOrNull { it.talla == talla }?.stock ?: 0
+//                            totalStockColor += cantidad
+//
+//                            row.createCell(startTallaCol + i)
+//                                .setCellValue(cantidad.toDouble())
+//                        }
+//
+//                        val costoTotalColor = itemsColor.sumOf {
+////                        it.stock * it.costo
+//                            val stock = it.stock ?: 0
+//                            val costo = it.costo ?: 0.0
+//                            stock * costo
+//
+//                        }
+//
+//                        row.createCell(colStock).setCellValue(totalStockColor.toDouble())
+//                        row.createCell(colCosto).setCellValue(costoTotalColor)
+//
+//                        rowIndex++
+//                    }
+//
+//                    rowIndex++ // espacio entre modelos
+//                }
+//                Log.d("EXCEL_DEBUG", "Escribiendo archivo Excel...")
+//                workbook.write(fos)
+//                Log.d("EXCEL_DEBUG", "Excel escrito correctamente")
+//                workbook.close()
+//                viewModelScope.launch(Dispatchers.Main) {
+//                    _excelGenerated.value = file.absolutePath
+//                }
+//            }
+//        }catch (e: Exception){
+//            Log.e("EXCEL_ERROR", "Error generando Excel", e)
+//        }
+//    }
 
 
     //PARA QUE LA UI DETECTE CUANDO EL ARCHIVO ESTE DISPONBILE
