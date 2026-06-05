@@ -74,7 +74,7 @@ fun LoginScreen(
     val isLoginScreenActive = remember { mutableStateOf(false) }
 
     val animatedLogoSize by animateDpAsState(
-        targetValue = if (isLoginScreenActive.value) 80.dp else 200.dp,
+        targetValue = if (isLoginScreenActive.value) 120.dp else 200.dp,
         animationSpec = tween(durationMillis = 1000)
     )
 
@@ -174,9 +174,9 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF4A90C2))
+            .background(Color(0xFF1A1A1A))
     ) {
-        // Fondo de marca (verde) - Ocupa toda la pantalla
+        // Fondo de marca - Ocupa toda la pantalla
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -226,7 +226,7 @@ fun LoginScreen(
                     topStart = 32.dp,
                     topEnd = 32.dp
                 ), // Esquinas redondeadas
-                color = MaterialTheme.colorScheme.surface
+                color = Color(0xFFF5EFE6)
             ) {
                 Column(
                     modifier = Modifier
@@ -304,12 +304,13 @@ fun LoginScreen(
                                 Text("La contraseña debe tener al menos 6 caracteres")
                             }
                         },
+                        shape = RoundedCornerShape(12.dp), //bordes redondeados
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = brandPrimaryColor,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = Color(0xFF1A1A1A), // color negro
+                            unfocusedBorderColor = Color(0xFFC8A882), //color madera media
                             errorBorderColor = MaterialTheme.colorScheme.error,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
+                            focusedContainerColor = Color(0xFFFDFAF7),
+                            unfocusedContainerColor = Color(0xFFFDFAF7)
                         )
                     )
                     Spacer(modifier = Modifier.height(22.dp))
@@ -320,7 +321,7 @@ fun LoginScreen(
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(50), // Botón más redondeado
-                        colors = ButtonDefaults.buttonColors(containerColor = brandSecondaryColor) // Color azul
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1A1A)) // Color azul
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -370,26 +371,23 @@ fun LoginScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(22.dp))
-
+                    Spacer(modifier = Modifier.height(15.dp))
                     TextButton(onClick = { /* TODO: Implementar navegación a pantalla de recuperación */ }) {
                         Text(
                             "Olvidé mi contraseña",
-                            color = brandPrimaryColor,
+                            color = Color(0xFFC8A882),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp)) // Espacio para el botón de registro
                     TextButton(onClick = onNavigateToRegister) {
                         Text(
                             "¿No tienes cuenta? Regístrate",
-                            color = brandPrimaryColor,
+                            color = Color(0xFFC8A882),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "v23.0", // Versión de la app
+                        "v1.2", // Versión de la app
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
