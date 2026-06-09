@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -175,6 +177,12 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1A1A1A))
+            .pointerInput(Unit){
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus() // <--- Esto quita el cursor del input
+                    keyboardController?.hide() // <--- Esto esconde el teclado
+                })
+            }
     ) {
         // Fondo de marca - Ocupa toda la pantalla
         Column(
@@ -242,34 +250,37 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         value = email,
-                        onValueChange = {
+                        placeholder = {Text("Correo electronico")},
+                                onValueChange = {
                             email = it
                             emailError = false
                         },
-                        label = { Text("Ingresa Correo electrónico") },
+//                        label = { Text("Ingresa Correo electrónico") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Email,
                             imeAction = ImeAction.Next
                         ),
-                        keyboardActions = KeyboardActions(onNext = {
+                        keyboardActions = KeyboardActions(
+                            onNext = {
                             focusManager.moveFocus(
                                 FocusDirection.Down
-                            )
-                        }),
+                            )}
+                        ),
                         isError = emailError,
                         supportingText = {
                             if (emailError) {
                                 Text("Introduce un correo electrónico válido")
                             }
                         },
+                        shape = RoundedCornerShape(12.dp), //bordes redondeados
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = brandPrimaryColor,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = Color(0xFF1A1A1A),
+                            unfocusedBorderColor = Color(0xFFC8A882),
                             errorBorderColor = MaterialTheme.colorScheme.error,
-                            focusedContainerColor = Color.Transparent, // Fondo transparente
-                            unfocusedContainerColor = Color.Transparent // Fondo transparente
+                            focusedContainerColor = Color(0xFFFDFAF7), // Blanco suave
+                            unfocusedContainerColor = Color(0xFFFDFAF7) // Blanco suave
                         )
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -279,7 +290,7 @@ fun LoginScreen(
                             password = it
                             passwordError = false
                         },
-                        label = { Text("Ingresa Contraseña") }, // El label se mantiene para accesibilidad
+//                        label = { Text("Ingresa Contraseña") }, // El label se mantiene para accesibilidad
                         placeholder = { Text("Ingresa tu contraseña") }, // Placeholder visible
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
