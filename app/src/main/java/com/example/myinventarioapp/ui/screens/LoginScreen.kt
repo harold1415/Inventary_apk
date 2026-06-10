@@ -207,7 +207,7 @@ fun LoginScreen(
             if (isLoginScreenActive.value) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "Hola, $userName",
+                    "Bienvenido, $userName",
                     style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
                     color = Color.White,
                     modifier = Modifier.graphicsLayer(alpha = animatedHelloTextAlpha)
@@ -386,14 +386,14 @@ fun LoginScreen(
                     TextButton(onClick = { /* TODO: Implementar navegación a pantalla de recuperación */ }) {
                         Text(
                             "Olvidé mi contraseña",
-                            color = Color(0xFFC8A882),
+                            color = Color(0xFFB8864B), //dorado elegante
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
                     TextButton(onClick = onNavigateToRegister) {
                         Text(
                             "¿No tienes cuenta? Regístrate",
-                            color = Color(0xFFC8A882),
+                            color = Color(0xFFB8864B), // dorado elegante
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
