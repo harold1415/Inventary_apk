@@ -3,6 +3,7 @@ package com.example.myinventarioapp.ui.screens
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -220,9 +221,9 @@ fun LoginScreen(
             visible = isLoginScreenActive.value,
             enter = slideInVertically(
                 initialOffsetY = { it },
-                animationSpec = tween(durationMillis = 700, delayMillis = 300)
+                animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)
             ) +
-                    fadeIn(animationSpec = tween(durationMillis = 700, delayMillis = 300)),
+                    fadeIn(animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter) // Asegura que se ancle a la parte inferior
         ) {
