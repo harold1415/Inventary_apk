@@ -9,12 +9,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myinventarioapp.ui.viewmodel.UserViewModel
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
-
+import com.example.myinventarioapp.ui.utils.SessionManager
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
     val ventaViewModel: VentaViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background // Usa el color del tema activo
@@ -23,7 +27,8 @@ fun AppNavGraph(navController: NavHostController) {
             composable("login") {
                 LoginScreen(
                     onNavigateToRegister = { navController.navigate("register") },
-                    onLoginSuccess = {
+                    onLoginSuccess = {userName, userRole, userEmail ->
+                        userViewModel.setUserData(userName, userRole, userEmail)
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
@@ -47,11 +52,15 @@ fun AppNavGraph(navController: NavHostController) {
 
             composable("home") {
                 HomeScreen(
+                    userName = userViewModel.userName,
+                    userRole = userViewModel.userRole,
                     onNavigateToInventario = { navController.navigate("inventario") },
                     onNavigateToVentas = { navController.navigate("ventas") },
                     onNavigateToReport = { navController.navigate("reporte") },
                     onNavigateToSetting ={ navController.navigate(("setting"))},
                     onLogout = {
+                        userViewModel.clearUserData() // Limpiar datos al cerrar sesión
+                        SessionManager(context).clearSession() // <--- Limpiar también la memoria del teléfono
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }

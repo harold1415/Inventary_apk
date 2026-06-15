@@ -1,6 +1,5 @@
 package com.example.myinventarioapp.ui.screens
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -18,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -40,11 +40,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import com.example.myinventarioapp.R // Asegúrate de que este import sea correcto para tu proyecto
+import com.example.myinventarioapp.ui.utils.SessionManager
 
 // TODO: Reemplaza con el ID de tu logo en drawable
 // Por ejemplo: R.drawable.tu_logo_aqui
@@ -55,12 +55,16 @@ val APP_LOGO_RES_ID = R.drawable.ic_menu_logo // Placeholder, ¡cámbialo!
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (String, String, String) -> Unit
 ) {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
+    val sessionManager = remember { SessionManager(context) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
+    // Estados de datos
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -70,8 +74,10 @@ fun LoginScreen(
     var passwordError by remember { mutableStateOf(false) }
     var userName by remember { mutableStateOf("Usuario") } // Para el saludo "Hola, Usuario"
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
+
+
+    // Lógica de "Usuario Recordado"
+    var isUserRemembered by remember { mutableStateOf(sessionManager.isUserRemembered()) }
 
     // Estados para la animación
     val isLoginScreenActive = remember { mutableStateOf(false) }
@@ -97,9 +103,8 @@ fun LoginScreen(
 
     LaunchedEffect(Unit) {
         // Recuperar datos guardados al iniciar
-        val sharedPref = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        email = sharedPref.getString("email", "") ?: ""
-        rememberMe = email.isNotEmpty()
+        email = sessionManager.getUserEmail() ?: ""
+        userName = sessionManager.getUserName() ?: "Usuario"
 
         // Iniciar animación después de un breve retraso
         delay(1000) // Espera 1 segundo en el splash inicial
@@ -126,26 +131,18 @@ fun LoginScreen(
                         db.collection("usuarios").document(uid).get()
                             .addOnSuccessListener { document ->
                                 isLoading = false
-                                val rol = document.getString("rol")
+                                val rol = document.getString("rol")?.takeIf { it.isNotBlank() }
+                                    ?: "Sin rol"
                                 userName = document.getString("nombre")
                                     ?: "Usuario" // Obtener nombre del usuario
-                                val sharedPref =
-                                    context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                                sharedPref.edit {
-                                    if (rememberMe) {
-                                        putString("email", email)
-                                    } else {
-                                        clear()
-                                    }
-                                    apply()
-                                }
+                                sessionManager.saveSession(userName, email)
                                 if (rol == "admin" || rol == "vendedor") {
                                     Toast.makeText(
                                         context,
                                         "Bienvenido $rol",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    onLoginSuccess()
+                                    onLoginSuccess(userName, rol, email)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -244,11 +241,12 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Ingresa tus Datos", // Texto como en la imagen de Interbank
+                        if(isUserRemembered) "Ingresa tus Datos" else "Inicia Sesión", // Texto como en la imagen de Interbank
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(20.dp))
+                    if(!isUserRemembered){
                     OutlinedTextField(
                         value = email,
                         placeholder = {Text("Correo electronico")},
@@ -284,6 +282,7 @@ fun LoginScreen(
                             unfocusedContainerColor = Color(0xFFFDFAF7) // Blanco suave
                         )
                     )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = password,
@@ -390,6 +389,20 @@ fun LoginScreen(
                             color = Color(0xFFB8864B), //dorado elegante
                             style = MaterialTheme.typography.bodyLarge
                         )
+                    }
+                    // Opción "Usar otra cuenta"
+                    if (isUserRemembered) {
+                        TextButton(onClick = {
+                            isUserRemembered = false
+                            email = ""
+                            userName = "usuario"
+                        }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(20.dp), tint = brandPrimaryColor)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Usar otra cuenta", color = brandPrimaryColor)
+                            }
+                        }
                     }
                     TextButton(onClick = onNavigateToRegister) {
                         Text(

@@ -1,8 +1,5 @@
 package com.example.myinventarioapp.ui.screens
 
-import android.content.Context
-import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,12 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+
 
 // Definición de colores para mantener la consistencia
 val brandPrimaryColor = Color(0xFF1A1A1A) // Negro
@@ -42,35 +37,14 @@ data class MenuItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    userName: String,
+    userRole: String,
     onNavigateToInventario: () -> Unit,
     onNavigateToVentas: () -> Unit,
     onNavigateToSetting: () -> Unit,
     onNavigateToReport: () -> Unit,
     onLogout: () -> Unit
 ) {
-    val context = LocalContext.current
-    val auth = FirebaseAuth.getInstance()
-    val db = FirebaseFirestore.getInstance()
-
-    var userEmail by remember { mutableStateOf("") }
-    var userRole by remember { mutableStateOf("") }
-    var userName by remember { mutableStateOf("") }
-
-    LaunchedEffect(Unit) {
-        if(userName.isBlank()){
-        auth.currentUser?.uid?.let {
-            db.collection("usuarios").document(it).get()
-                .addOnSuccessListener { document ->
-                    userEmail = document.getString("email") ?: ""
-                    userName = document.getString("nombre") ?: ""
-                    userRole = document.getString("rol") ?: ""
-                }
-                .addOnFailureListener {
-                    Toast.makeText(context, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
-                }
-        }}
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
