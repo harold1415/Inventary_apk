@@ -21,7 +21,7 @@ fun AppNavGraph(navController: NavHostController) {
     val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background // Usa el color del tema activo
+//        color = MaterialTheme.colorScheme.background // Usa el color del tema activo
     ) {
         NavHost(navController = navController, startDestination = "login") {
             composable("login") {
