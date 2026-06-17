@@ -9,27 +9,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myinventarioapp.ui.viewmodel.UserViewModel
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
-import com.example.myinventarioapp.ui.utils.SessionManager
-import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    // 🔹 ventaViewModel se sigue creando aquí porque DetailVenta, ProductsVenta y
+    // SearchProductScreen viven en este NavHost EXTERNO (a pantalla completa) y
+    // necesitan compartir el mismo ViewModel que VentaScreen (que ahora vive dentro
+    // de MainScaffold). Pasarlo desde aquí mantiene una sola instancia compartida.
     val ventaViewModel: VentaViewModel = viewModel()
-    val userViewModel: UserViewModel = viewModel()
-    val context = LocalContext.current
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-//        color = MaterialTheme.colorScheme.background // Usa el color del tema activo
+        color = MaterialTheme.colorScheme.background // Usa el color del tema activo
     ) {
         NavHost(navController = navController, startDestination = "login") {
             composable("login") {
                 LoginScreen(
                     onNavigateToRegister = { navController.navigate("register") },
-                    onLoginSuccess = {userName, userRole, userEmail ->
-                        userViewModel.setUserData(userName, userRole, userEmail)
-                        navController.navigate("home") {
+                    onLoginSuccess = { userName, rol, email ->
+                        // 🔹 Pasamos los 3 valores como argumentos de ruta hacia "main",
+                        // así MainScaffold los puede leer y entregárselos a HomeScreen.
+                        navController.navigate("main/$userName/$rol/$email") {
                             popUpTo("login") { inclusive = true }
                         }
                     }
@@ -41,32 +43,36 @@ fun AppNavGraph(navController: NavHostController) {
                     navController.popBackStack()
                 })
             }
-            composable("setting"){
-                SettingScreen(
-                    onNavigateToLocal = {navController.navigate("local")}
-                )
-            }
-            composable("local"){
+
+            composable("local") {
                 LocalScreen()
             }
 
-            composable("home") {
-                HomeScreen(
-                    userName = userViewModel.userName,
-                    userRole = userViewModel.userRole,
-                    onNavigateToInventario = { navController.navigate("inventario") },
-                    onNavigateToVentas = { navController.navigate("ventas") },
-                    onNavigateToReport = { navController.navigate("reporte") },
-                    onNavigateToSetting ={ navController.navigate(("setting"))},
-                    onLogout = {
-                        userViewModel.clearUserData() // Limpiar datos al cerrar sesión
-                        SessionManager(context).clearSession() // <--- Limpiar también la memoria del teléfono
-                        navController.navigate("login") {
-                            popUpTo("home") { inclusive = true }
-                        }
-                    }
+            // 🔹 NUEVA RUTA: contiene el Scaffold con bottom bar (Home, Inventario,
+            // Ventas, Reportes, Config) y su propio NavHost interno.
+            // Recibe userName/rol/email del login como argumentos de ruta.
+            composable(
+                route = "main/{userName}/{rol}/{email}",
+                arguments = listOf(
+                    androidx.navigation.navArgument("userName") { type = androidx.navigation.NavType.StringType },
+                    androidx.navigation.navArgument("rol") { type = androidx.navigation.NavType.StringType },
+                    androidx.navigation.navArgument("email") { type = androidx.navigation.NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val userName = backStackEntry.arguments?.getString("userName") ?: ""
+                val rol = backStackEntry.arguments?.getString("rol") ?: ""
+                val email = backStackEntry.arguments?.getString("email") ?: ""
+                MainScaffold(
+                    rootNavController = navController,
+                    userName = userName,
+                    userRole = rol,
+                    userEmail = email
                 )
             }
+
+            // 🔹 Las pantallas de abajo se mantienen en este NavHost externo porque son
+            // flujos "a pantalla completa" (sin bottom bar): escaneo QR, detalle de una
+            // venta puntual, búsqueda de productos para agregar a una venta, etc.
             composable(
                 route = "inventario?codigoEscaneado={codigoEscaneado}",
                 arguments = listOf(
@@ -91,14 +97,7 @@ fun AppNavGraph(navController: NavHostController) {
                     }
                 )
             }
-            composable("ventas") {
-                VentaScreen(
-                    onNavigateToDetailVenta = { ventaId ->
-                        navController.navigate("detailventa/$ventaId")
-                    },
-                    ventaViewModel = ventaViewModel
-                )
-            }
+
             composable(
                 route = "detailventa/{ventaId}",
                 arguments = listOf(
@@ -111,17 +110,18 @@ fun AppNavGraph(navController: NavHostController) {
                 val ventaId = backStackEntry.arguments?.getString("ventaId") ?: "New"
                 DetailVenta(
                     onVentaScreen = {
-                        navController.navigate("ventas") {
-                            popUpTo("ventas") { inclusive = false }
-                            launchSingleTop = true
-                        }
+                        // 🔹 Volvemos al NavHost interno simplemente retrocediendo,
+                        // ya que "main/{userName}/{rol}/{email}" sigue en el back stack
+                        // con su estado guardado (Ventas seguirá seleccionado).
+                        navController.popBackStack()
                     },
                     onSearch = { navController.navigate("SearchProducts") },
                     ventaViewModel = ventaViewModel,
                     ventaId = ventaId,
                     navController = navController,
-                    )
+                )
             }
+
             composable("productsventa") {
                 ProductsVenta(
                     onToDetailVenta = { ventaId ->
@@ -131,6 +131,7 @@ fun AppNavGraph(navController: NavHostController) {
                     ventaViewModel = ventaViewModel
                 )
             }
+
             composable(
                 route = "SearchProducts?codigoEscaneado={codigoEscaneado}",
                 arguments = listOf(
@@ -140,8 +141,7 @@ fun AppNavGraph(navController: NavHostController) {
                         nullable = true
                     }
                 )
-            )
-            { backStackEntry ->
+            ) { backStackEntry ->
                 val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
                 SearchProductScreen(
                     navController = navController,
@@ -150,6 +150,7 @@ fun AppNavGraph(navController: NavHostController) {
                     ventaViewModel = ventaViewModel
                 )
             }
+
             composable("scannerSearch") {
                 ScannerScreen(
                     onCodeScanned = { scannedCode ->
@@ -160,13 +161,6 @@ fun AppNavGraph(navController: NavHostController) {
                     }
                 )
             }
-            composable("reporte"){
-                ReportScreen(
-                    navController = navController,
-                )
-            }
         }
     }
 }
-
-

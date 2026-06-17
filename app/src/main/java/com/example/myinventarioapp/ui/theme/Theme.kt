@@ -14,6 +14,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
+
 
 
 private val DarkColorScheme = darkColorScheme(
@@ -38,6 +40,21 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+// 🎨 Paleta de marca L Moda — negro, blanco cálido y madera
+val BrandBlack = Color(0xFF1A1A1A)
+val BrandWarmWhite = Color(0xFFFDFAF7)
+val BrandWoodMedium = Color(0xFFC8A882)
+val BrandWoodLight = Color(0xFFE8D9C0)
+val BrandWarmBackground = Color(0xFFF5EFE6)
+
+// Variante para textos sobre fondo cálido (gris cálido, no negro puro)
+val BrandTextSecondary = Color(0xFF8B7355)
+
+// Color de alerta para stock bajo (se mantiene independiente de la paleta cálida
+// para que el usuario lo distinga rápido como "atención")
+val StockLowColor = Color(0xFFB3413E)
+val StockOkColor = Color(0xFF1A1A1A)
 
 @Composable
 fun MyInventarioAppTheme(
