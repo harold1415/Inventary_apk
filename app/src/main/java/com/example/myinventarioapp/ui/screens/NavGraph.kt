@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 
 
 @Composable
@@ -52,11 +54,11 @@ fun AppNavGraph(navController: NavHostController) {
             // Ventas, Reportes, Config) y su propio NavHost interno.
             // Recibe userName/rol/email del login como argumentos de ruta.
             composable(
-                route = "main/{userName}/{rol}/{email}",
+                "main/{userName}/{rol}/{email}",
                 arguments = listOf(
-                    androidx.navigation.navArgument("userName") { type = androidx.navigation.NavType.StringType },
-                    androidx.navigation.navArgument("rol") { type = androidx.navigation.NavType.StringType },
-                    androidx.navigation.navArgument("email") { type = androidx.navigation.NavType.StringType }
+                    navArgument("userName") { NavType.StringType },
+                    navArgument("rol") { NavType.StringType },
+                    navArgument("email") { NavType.StringType }
                 )
             ) { backStackEntry ->
                 val userName = backStackEntry.arguments?.getString("userName") ?: ""
