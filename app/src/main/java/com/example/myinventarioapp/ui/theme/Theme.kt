@@ -42,11 +42,11 @@ private val LightColorScheme = lightColorScheme(
 )
 
 // 🎨 Paleta de marca L Moda — negro, blanco cálido y madera
-val BrandBlack = Color(0xFF1A1A1A)
-val BrandWarmWhite = Color(0xFFFDFAF7)
-val BrandWoodMedium = Color(0xFFC8A882)
-val BrandWoodLight = Color(0xFFE8D9C0)
-val BrandWarmBackground = Color(0xFFF5EFE6)
+val BrandBlack = Color(0xFF1A1A1A) //negro carbon
+val BrandWarmWhite = Color(0xFFFDFAF7) // blanco calido
+val BrandWoodMedium = Color(0xFFC8A882) // madera beige
+val BrandWoodLight = Color(0xFFE8D9C0) // madera clara/arena
+val BrandWarmBackground = Color(0xFFF5EFE6) // fondo crema
 
 // Variante para textos sobre fondo cálido (gris cálido, no negro puro)
 val BrandTextSecondary = Color(0xFF8B7355)
