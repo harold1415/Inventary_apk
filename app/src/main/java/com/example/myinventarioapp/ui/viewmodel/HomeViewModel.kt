@@ -11,13 +11,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
+import java.util.Date
 
 // 🔹 Estado de las métricas del dashboard. Se agrupan en una sola data class
 // para que la UI observe un solo StateFlow en vez de varios sueltos.
 data class HomeMetrics(
     val ventasTotales: Double = 0.0,
     val gananciaTotal: Double = 0.0,
-    val cantidadVentas: Int = 0
+    val cantidadVentas: Int = 0,
+    val unidadesVendidas: Long = 0,
+    val ticketPromedio: Double = 0.0,
+    val totalDescuentos:Double = 0.0
+)
+
+// Una fila del ranking de suscursales
+data class SucursalMetric(
+    val nombre: String,
+    val total: Double,
+    val porcentaje: Float
 )
 
 class HomeViewModel : ViewModel() {
@@ -32,9 +43,17 @@ class HomeViewModel : ViewModel() {
     private val _sucursalSeleccionada = MutableStateFlow<String?>(null)
     val sucursalSeleccionada: StateFlow<String?> = _sucursalSeleccionada
 
+    //Fecha seleccionada - por defecto hoy
+    private val _fechaSeleccionada = MutableStateFlow<Date>(Date())
+    val fechaSeleccionada: StateFlow<Date> = _fechaSeleccionada
+
     // Métricas calculadas para la sucursal elegida
     private val _metrics = MutableStateFlow(HomeMetrics())
     val metrics: StateFlow<HomeMetrics> = _metrics
+
+    //Top sucursales calculado por firebase
+    private val _topSucursales = MutableStateFlow<List<SucursalMetric>>(emptyList())
+    val topSucursales: StateFlow<List<SucursalMetric>> =  _topSucursales
 
     // Estado de carga mientras se consulta Firestore
     private val _isLoading = MutableStateFlow(false)
