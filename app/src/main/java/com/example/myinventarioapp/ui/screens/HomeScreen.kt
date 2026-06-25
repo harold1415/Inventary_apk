@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,7 +30,18 @@ import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
 import com.example.myinventarioapp.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+// Datos simulados para el top de tipo de prendas
+private val topPrendasMock = listOf(
+    "Casacas" to 0.1f,
+    "Pantalones" to 0.72f,
+    "Camisas" to 0.52f,
+    "Polos" to 0.29f,
+    "Chompas" to 0.18f
+)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -39,10 +51,20 @@ fun HomeScreen(
     onLogout: () -> Unit,
     homeViewModel: HomeViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val locales by homeViewModel.locales.collectAsState()
     val sucursalSeleccionada by homeViewModel.sucursalSeleccionada.collectAsState()
     val metrics by homeViewModel.metrics.collectAsState()
+    val topSucursales by homeViewModel.topSucursales.collectAsState()
     val isLoading by homeViewModel.isLoading.collectAsState()
+    val fechaSeleccionada by homeViewModel.fechaSeleccionada.collectAsState()
+
+    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val fechaTexto = remember(fechaSeleccionada){
+        val hoy = SimpleDateFormat("dd,MM,yyyy", Locale.getDefault()).format(Date())
+        val elegida  = sdf.format(fechaSeleccionada)
+        if(elegida == hoy){}
+    }
 
     var dropdownExpanded by remember { mutableStateOf(false) }
 
