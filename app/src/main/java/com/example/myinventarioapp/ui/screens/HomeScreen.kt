@@ -63,7 +63,7 @@ fun HomeScreen(
     val fechaTexto = remember(fechaSeleccionada){
         val hoy = SimpleDateFormat("dd,MM,yyyy", Locale.getDefault()).format(Date())
         val elegida  = sdf.format(fechaSeleccionada)
-        if(elegida == hoy){}
+        if(elegida == hoy)"Hoy" else elegida
     }
 
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -204,61 +204,66 @@ fun HomeScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = BrandTextSecondary
                 )
-
-                Spacer(Modifier.height(24.dp))
-
-                // 🔽 Selector de sucursal
-                ExposedDropdownMenuBox(
-                    expanded = dropdownExpanded,
-                    onExpandedChange = { dropdownExpanded = !dropdownExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = when (sucursalSeleccionada) {
-                            null -> "Selecciona una sucursal"
-                            "" -> "Todos los locales"
-                            else -> sucursalSeleccionada!!
-                        },
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Sucursal") },
-                        shape = RoundedCornerShape(16.dp),
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BrandBlack,
-                            unfocusedBorderColor = BrandWoodMedium,
-                            focusedContainerColor = BrandWarmWhite,
-                            unfocusedContainerColor = BrandWarmWhite
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    )
-
-                    ExposedDropdownMenu(
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ){
+                    // 🔽 Selector de sucursal
+                    ExposedDropdownMenuBox(
                         expanded = dropdownExpanded,
-                        onDismissRequest = { dropdownExpanded = false }
+                        onExpandedChange = { dropdownExpanded = !dropdownExpanded },
+                        modifier = Modifier.weight(1f)
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Todos los locales") },
-                            onClick = {
-                                homeViewModel.seleccionarSucursal("")
-                                dropdownExpanded = false
-                            }
+                        OutlinedTextField(
+                            value = when (sucursalSeleccionada) {
+                                "" -> "Todas"
+                                else -> sucursalSeleccionada ?: "Todas"
+                            },
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Sucursal", fontSize = 11.sp) },
+                            shape = RoundedCornerShape(16.dp),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandBlack,
+                                unfocusedBorderColor = BrandWoodMedium,
+                                focusedContainerColor = BrandWarmWhite,
+                                unfocusedContainerColor = BrandWarmWhite
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
                         )
-                        locales.forEach { local ->
+
+                        ExposedDropdownMenu(
+                            expanded = dropdownExpanded,
+                            onDismissRequest = { dropdownExpanded = false }
+                        ) {
                             DropdownMenuItem(
-                                text = { Text(local.nombre) },
+                                text = { Text("Todos los locales") },
                                 onClick = {
-                                    homeViewModel.seleccionarSucursal(local.nombre)
+                                    homeViewModel.seleccionarSucursal("")
                                     dropdownExpanded = false
                                 }
                             )
+                            locales.forEach { local ->
+                                DropdownMenuItem(
+                                    text = { Text(local.nombre) },
+                                    onClick = {
+                                        homeViewModel.seleccionarSucursal(local.nombre)
+                                        dropdownExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
+
                 }
+                Spacer(Modifier.height(24.dp))
+
+
 
                 Spacer(Modifier.height(24.dp))
 
