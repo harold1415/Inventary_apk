@@ -122,6 +122,7 @@ fun HomeScreen(
             containerColor = BrandWarmBackground,
             topBar = {
                 TopAppBar(
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     title = { Text("Dashboard", color = BrandWarmWhite) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBlack),
                     navigationIcon = {

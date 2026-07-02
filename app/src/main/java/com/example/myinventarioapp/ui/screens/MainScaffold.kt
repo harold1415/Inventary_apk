@@ -1,5 +1,8 @@
 package com.example.myinventarioapp.ui.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Scaffold
@@ -27,61 +30,69 @@ fun MainScaffold(
     Scaffold(
         bottomBar = { BottomNavBar(innerNavController) }
     ) { padding ->
-        NavHost(
-            navController = innerNavController,
-            startDestination = "home",
-            modifier = Modifier.padding(padding) // 👈 respeta el espacio que ocupa la bottom bar
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            composable("home") {
-                HomeScreen(
-                    userName = userName,
-                    userRole = userRole,
-                    onLogout = {
-                        // 🔹 El logout navega en el NavController EXTERNO, ya que login
-                        // vive fuera de este Scaffold con bottom bar
-                        rootNavController.navigate("login") {
-                            popUpTo(0) // 👈 limpia TODO el back stack (incluida la ruta "main/.../..." con argumentos)
+            NavHost(
+                navController = innerNavController,
+                startDestination = "home",
+                modifier = Modifier.padding(padding) // 👈 respeta el espacio que ocupa la bottom bar
+            ) {
+                composable("home") {
+                    HomeScreen(
+                        userName = userName,
+                        userRole = userRole,
+                        onLogout = {
+                            // 🔹 El logout navega en el NavController EXTERNO, ya que login
+                            // vive fuera de este Scaffold con bottom bar
+                            rootNavController.navigate("login") {
+                                popUpTo(0) // 👈 limpia TODO el back stack (incluida la ruta "main/.../..." con argumentos)
+                            }
                         }
-                    }
-                )
-            }
+                    )
+                }
 
-            composable(
-                route = "inventario?codigoEscaneado={codigoEscaneado}",
-                arguments = listOf(
-                    androidx.navigation.navArgument("codigoEscaneado") {
-                        type = androidx.navigation.NavType.StringType
-                        defaultValue = ""
-                        nullable = true
-                    }
-                )
-            ) { backStackEntry ->
-                val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
-                // 🔹 OJO: InventarioScreen usa internamente navController.navigate("scanner")
-                // Como "scanner" no existe en este NavHost interno, le pasamos el rootNavController
-                // para que esa navegación a pantalla completa funcione correctamente.
-                InventarioScreen(navController = rootNavController, codigoEscaneado = codigoEscaneado)
-            }
+                composable(
+                    route = "inventario?codigoEscaneado={codigoEscaneado}",
+                    arguments = listOf(
+                        androidx.navigation.navArgument("codigoEscaneado") {
+                            type = androidx.navigation.NavType.StringType
+                            defaultValue = ""
+                            nullable = true
+                        }
+                    )
+                ) { backStackEntry ->
+                    val codigoEscaneado =
+                        backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
+                    // 🔹 OJO: InventarioScreen usa internamente navController.navigate("scanner")
+                    // Como "scanner" no existe en este NavHost interno, le pasamos el rootNavController
+                    // para que esa navegación a pantalla completa funcione correctamente.
+                    InventarioScreen(
+                        navController = rootNavController,
+                        codigoEscaneado = codigoEscaneado
+                    )
+                }
 
-            composable("ventas") {
-                VentaScreen(
-                    onNavigateToDetailVenta = { ventaId ->
-                        rootNavController.navigate("detailventa/$ventaId")
-                    },
-                    ventaViewModel = ventaViewModel
-                )
-            }
+                composable("ventas") {
+                    VentaScreen(
+                        onNavigateToDetailVenta = { ventaId ->
+                            rootNavController.navigate("detailventa/$ventaId")
+                        },
+                        ventaViewModel = ventaViewModel
+                    )
+                }
 
-            composable("reporte") {
-                ReportScreen(
-                    navController = rootNavController
-                )
-            }
+                composable("reporte") {
+                    ReportScreen(
+                        navController = rootNavController
+                    )
+                }
 
-            composable("setting") {
-                SettingScreen(
-                    onNavigateToLocal = { rootNavController.navigate("local") }
-                )
+                composable("setting") {
+                    SettingScreen(
+                        onNavigateToLocal = { rootNavController.navigate("local") }
+                    )
+                }
             }
         }
     }

@@ -58,9 +58,9 @@ val StockOkColor = Color(0xFF1A1A1A)
 
 @Composable
 fun MyInventarioAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -89,9 +89,9 @@ fun AjustarBarraEstado() {
     SideEffect {
         // Fondo fijo según tema: negro en oscuro, blanco en claro
         window.statusBarColor = if (isDarkTheme) {
-            androidx.compose.ui.graphics.Color.Black.toArgb()
+            Color.Black.toArgb()
         } else {
-            androidx.compose.ui.graphics.Color.White.toArgb()
+            Color.White.toArgb()
         }
 
         // Íconos claros u oscuros según fondo

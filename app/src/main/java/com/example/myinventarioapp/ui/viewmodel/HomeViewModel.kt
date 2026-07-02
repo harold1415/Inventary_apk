@@ -1,6 +1,7 @@
 package com.example.myinventarioapp.ui.viewmodel
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myinventarioapp.ui.screens.Local
@@ -115,19 +116,21 @@ class HomeViewModel : ViewModel() {
             try {
                 val inicio = inicioDelDia(fecha)
                 val fin = finDelDia(fecha)
-
+                Log.d("FECHA_TEST","inicio $inicio")
+                Log.d("FECHA_TEST","fin $fin")
                 // 🔹 Query base: ventas dentro del rango del dia elegido
                 var query = db.collection("ventas")
                     .whereGreaterThanOrEqualTo("fecha", inicio)
                     .whereLessThanOrEqualTo("fecha", fin)
-
+                Log.d("HOME_TEST", "Sucursal recibida = '$sucursal'")
                 // 🔹 Si eligió una sucursal específica (no "Todos los locales"), filtramos también por ella
                 if (sucursal.isNotBlank()) {
+                    Log.d("HOME_TEST", "Aplicando filtro por sucursal")
                     query = query.whereEqualTo("sucursal", sucursal)
                 }
 
                 val snapshot = query.get().await()
-
+                Log.d("FECHA_TEST","ventas encontradas ${snapshot.size()}")
                 var totalVentas = 0.0
                 var totalGanancia = 0.0
                 var totalUnidades = 0L
@@ -175,6 +178,7 @@ class HomeViewModel : ViewModel() {
             } catch (e: Exception) {
                 // 🔹 Si falla (ej. falta un índice compuesto en Firestore para
                 // fecha + sucursal), dejamos las métricas en 0 en vez de crashear.
+                Log.e("HOME_ERROR", "Error cargando métricas", e)
                 _metrics.value = HomeMetrics()
             } finally {
                 _isLoading.value = false

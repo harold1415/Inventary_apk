@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,6 +55,12 @@ import androidx.navigation.NavController
 import com.example.myinventarioapp.ui.viewmodel.ReportViewModel
 import java.io.File
 import kotlin.text.ifEmpty
+import com.example.myinventarioapp.ui.theme.BrandBlack
+import com.example.myinventarioapp.ui.theme.BrandTextSecondary
+import com.example.myinventarioapp.ui.theme.BrandWarmBackground
+import com.example.myinventarioapp.ui.theme.BrandWarmWhite
+import com.example.myinventarioapp.ui.theme.BrandWoodLight
+import com.example.myinventarioapp.ui.theme.BrandWoodMedium
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,9 +119,15 @@ fun ReportScreen(
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BrandWarmWhite,   // 👈 fondo claro
+                    titleContentColor = BrandBlack,
+                    navigationIconContentColor = BrandBlack
+                )
             )
-        },
+        }
     ) { padding ->
         Column(
             modifier = Modifier
