@@ -1,17 +1,21 @@
 package com.example.myinventarioapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 
 // 🔹 Este Composable representa la app "una vez logueado".
@@ -27,8 +31,25 @@ fun MainScaffold(
     val innerNavController = rememberNavController()
     val ventaViewModel: VentaViewModel = viewModel()
 
+    val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val hideBottomBarRoutes = listOf(
+        "detailventa",
+        "scannerSearch",
+        "SearchProducts"
+    )
+    val hideBottomBar = hideBottomBarRoutes.any { route ->
+        currentRoute?.startsWith(route) == true
+    }
     Scaffold(
-        bottomBar = { BottomNavBar(innerNavController) }
+//        bottomBar = { BottomNavBar(innerNavController) }
+        contentWindowInsets = WindowInsets(0), // 👈 le dice al Scaffold que no aplique insets
+        bottomBar = {
+            if (!hideBottomBar) {
+                BottomNavBar(innerNavController)
+            }
+        }
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
@@ -55,8 +76,8 @@ fun MainScaffold(
                 composable(
                     route = "inventario?codigoEscaneado={codigoEscaneado}",
                     arguments = listOf(
-                        androidx.navigation.navArgument("codigoEscaneado") {
-                            type = androidx.navigation.NavType.StringType
+                        navArgument("codigoEscaneado") {
+                            type = NavType.StringType
                             defaultValue = ""
                             nullable = true
                         }
@@ -68,19 +89,93 @@ fun MainScaffold(
                     // Como "scanner" no existe en este NavHost interno, le pasamos el rootNavController
                     // para que esa navegación a pantalla completa funcione correctamente.
                     InventarioScreen(
-                        navController = rootNavController,
+                        navController = innerNavController,
                         codigoEscaneado = codigoEscaneado
+                    )
+                }
+                composable("scannerInventary") {
+                    ScannerScreen(
+                        onCodeScanned = { scannedCode ->
+                            innerNavController.navigate("inventario?codigoEscaneado=$scannedCode") {
+                                launchSingleTop = true
+                                popUpTo("inventario?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+                            }
+                        }
                     )
                 }
 
                 composable("ventas") {
                     VentaScreen(
+//                        onNavigateToDetailVenta = { ventaId ->
+//                            rootNavController.navigate("detailventa/$ventaId")
+//                        },
                         onNavigateToDetailVenta = { ventaId ->
-                            rootNavController.navigate("detailventa/$ventaId")
+                            innerNavController.navigate("detailventa/$ventaId")
                         },
                         ventaViewModel = ventaViewModel
                     )
                 }
+
+                composable(
+                    "detailventa/{ventaid}",
+                    listOf(
+                        navArgument("ventaid") {
+                            type = NavType.StringType
+                            defaultValue = "New"
+                        }
+                    )
+                ){
+                    backStackEntry ->
+                    val ventaId = backStackEntry.arguments?.getString("ventaid") ?: "New"
+                    DetailVenta(
+                        onVentaScreen = {
+                            innerNavController.popBackStack()
+                        },
+                        onSearch = {innerNavController.navigate("SearchProducts")},
+                        ventaViewModel = ventaViewModel,
+                        ventaId = ventaId,
+                        navController = innerNavController,
+                    )
+                }
+
+                composable(
+                    "SearchProducts?codigoEscaneado?={codigoEscaneado}",
+                    listOf(
+                        navArgument("codigoEscaneado"){
+                            type = NavType.StringType
+                            defaultValue = ""
+                            nullable = true
+                        }
+                    )
+                ){ backStackEntry ->
+                    val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
+                    SearchProductScreen(
+                        navController = innerNavController,
+                        onToProductsVenta = {innerNavController.navigate("productsventa")},
+                        codigoEscaneado = codigoEscaneado,
+                        ventaViewModel = ventaViewModel
+                    )
+                }
+                composable("scannerSearch") {
+                    ScannerScreen(
+                        onCodeScanned = { scannedCode ->
+                            innerNavController.navigate("SearchProducts?codigoEscaneado=$scannedCode") {
+                                launchSingleTop = true
+                                popUpTo("SearchProducts?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+                            }
+                        }
+                    )
+                }
+                composable("productsventa"){
+                    ProductsVenta(
+                        onToDetailVenta = { ventaId ->
+                            innerNavController.navigate("detailventa/$ventaId")
+                        },
+                        onSearch = {innerNavController.navigate("SearchProducts")},
+                        ventaViewModel = ventaViewModel
+                    )
+                }
+
 
                 composable("reporte") {
                     ReportScreen(

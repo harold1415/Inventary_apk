@@ -13,7 +13,7 @@ import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        WindowCompat.setDecorFitsSystemWindows(window, true) // 👈 CLAVE
+        WindowCompat.setDecorFitsSystemWindows(window, false) // 👈 CLAVE
         setContent {
             MyInventarioAppTheme {
                 AjustarBarraEstado()

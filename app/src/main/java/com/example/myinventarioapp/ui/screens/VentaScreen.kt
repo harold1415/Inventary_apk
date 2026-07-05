@@ -1,6 +1,5 @@
 package com.example.myinventarioapp.ui.screens
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -15,18 +14,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import kotlin.text.contains
 import kotlin.text.ifEmpty
 import kotlin.text.isBlank
 
@@ -109,7 +102,8 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("\uD83E\uDDFE Registro de Ventas") })
+            TopAppBar(
+                title = { Text("\uD83E\uDDFE Registro de Ventas")},)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {

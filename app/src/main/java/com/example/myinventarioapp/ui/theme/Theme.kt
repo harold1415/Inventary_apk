@@ -2,7 +2,6 @@ package com.example.myinventarioapp.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -13,23 +12,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowCompat
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
-
-
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80,
-    background = androidx.compose.ui.graphics.Color(0xFF121212)
+    background = Color(0xFF121212)
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40,
-    background = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
+    background = Color(0xFFFFFFFF)
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
@@ -84,18 +80,9 @@ fun AjustarBarraEstado() {
     val view = LocalView.current
     val context = LocalContext.current
     val window = (context as Activity).window
-    val isDarkTheme = isSystemInDarkTheme()
-
     SideEffect {
-        // Fondo fijo según tema: negro en oscuro, blanco en claro
-        window.statusBarColor = if (isDarkTheme) {
-            Color.Black.toArgb()
-        } else {
-            Color.White.toArgb()
-        }
-
-        // Íconos claros u oscuros según fondo
+        // Íconos blancos
         WindowCompat.getInsetsController(window, view)
-            .isAppearanceLightStatusBars = !isDarkTheme
+            .isAppearanceLightStatusBars = false
     }
 }

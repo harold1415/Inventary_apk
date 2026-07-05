@@ -30,7 +30,6 @@ import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
 import com.example.myinventarioapp.ui.viewmodel.HomeViewModel
-import com.example.myinventarioapp.ui.viewmodel.SucursalMetric
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -122,7 +121,6 @@ fun HomeScreen(
             containerColor = BrandWarmBackground,
             topBar = {
                 TopAppBar(
-                    windowInsets = WindowInsets(0, 0, 0, 0),
                     title = { Text("Dashboard", color = BrandWarmWhite) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBlack),
                     navigationIcon = {
