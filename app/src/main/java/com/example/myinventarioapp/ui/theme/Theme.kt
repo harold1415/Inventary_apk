@@ -8,11 +8,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.runtime.SideEffect
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -76,13 +78,19 @@ fun MyInventarioAppTheme(
     )
 }
 @Composable
-fun AjustarBarraEstado() {
+fun AjustarBarraEstado(darkIcons: Boolean = false) {
     val view = LocalView.current
     val context = LocalContext.current
     val window = (context as Activity).window
-    SideEffect {
-        // Íconos blancos
-        WindowCompat.getInsetsController(window, view)
-            .isAppearanceLightStatusBars = false
+    DisposableEffect(darkIcons) {
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = darkIcons
+        }
+        onDispose {
+            // Al salir de la pantalla restaura a negro (false)
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = false
+            }
+        }
     }
 }

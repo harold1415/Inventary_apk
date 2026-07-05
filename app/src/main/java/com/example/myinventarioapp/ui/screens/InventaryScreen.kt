@@ -179,6 +179,12 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     if (isUploading) LoadingDialog(message = loadingMessage)
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("📋 Inventario", color = BrandWarmWhite) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBlack),
+            )
+        },
         containerColor = BrandWarmBackground,
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }, containerColor = BrandBlack, contentColor = BrandWarmWhite) {
@@ -204,15 +210,15 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
             modifier = Modifier.fillMaxSize().padding(padding)
                 .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
         ) {
-            // 🔲 HEADER NEGRO — consistente con el resto de la app
-            Surface(color = BrandBlack, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "📋 Inventario",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = BrandWarmWhite,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp)
-                )
-            }
+//            // 🔲 HEADER NEGRO — consistente con el resto de la app
+//            Surface(color = BrandBlack, modifier = Modifier.fillMaxWidth()) {
+//                Text(
+//                    text = "📋 Inventario",
+//                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+//                    color = BrandWarmWhite,
+//                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp)
+//                )
+//            }
 
             LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
                 stickyHeader {

@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import com.example.myinventarioapp.ui.theme.BrandBlack
 
 
 @Composable
@@ -24,7 +25,7 @@ fun AppNavGraph(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background // Usa el color del tema activo
+//        color = BrandBlack // 👈 cambia de MaterialTheme.colorScheme.background a negro
     ) {
         NavHost(navController = navController, startDestination = "login") {
             composable("login") {

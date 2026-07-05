@@ -1,5 +1,6 @@
 package com.example.myinventarioapp.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 
 // 🔹 Este Composable representa la app "una vez logueado".
@@ -43,7 +45,6 @@ fun MainScaffold(
         currentRoute?.startsWith(route) == true
     }
     Scaffold(
-//        bottomBar = { BottomNavBar(innerNavController) }
         contentWindowInsets = WindowInsets(0), // 👈 le dice al Scaffold que no aplique insets
         bottomBar = {
             if (!hideBottomBar) {
@@ -53,6 +54,7 @@ fun MainScaffold(
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
+//                .background(BrandBlack)
         ) {
             NavHost(
                 navController = innerNavController,

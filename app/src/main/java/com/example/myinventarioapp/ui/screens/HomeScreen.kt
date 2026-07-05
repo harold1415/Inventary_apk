@@ -119,6 +119,7 @@ fun HomeScreen(
     ) {
         Scaffold(
             containerColor = BrandWarmBackground,
+            modifier = Modifier.statusBarsPadding(),
             topBar = {
                 TopAppBar(
                     title = { Text("Dashboard", color = BrandWarmWhite) },
