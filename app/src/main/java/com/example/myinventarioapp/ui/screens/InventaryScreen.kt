@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.zIndex
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
@@ -107,6 +108,7 @@ data class Producto(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun InventarioScreen(navController: NavHostController, codigoEscaneado: String = "") {
+
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     var productos by remember { mutableStateOf(listOf<Producto>()) }
@@ -119,6 +121,9 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     var showImageDialog by rememberSaveable { mutableStateOf(false) }
     var showIMG by rememberSaveable { mutableStateOf(false) }
     var showContinueDialog by remember { mutableStateOf(false) }
+    // Estado de carga inicial — empieza en true y
+// se pone en false cuando Firestore responde por primera vez
+    var isLoadingProductos by remember { mutableStateOf(true) }
 
     var selectedProductId by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedProduct = productos.find { it.id == selectedProductId }
@@ -157,6 +162,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     LaunchedEffect(Unit) {
         db.collection("productos").addSnapshotListener { snapshot, _ ->
             snapshot?.let { productos = it.documents.mapNotNull { doc -> doc.toObject(Producto::class.java)?.copy(id = doc.id) } }
+            isLoadingProductos = false // 👈 ya llegaron los datos
         }
     }
     LaunchedEffect(Unit) {
@@ -210,20 +216,12 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
             modifier = Modifier.fillMaxSize().padding(padding)
                 .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
         ) {
-//            // 🔲 HEADER NEGRO — consistente con el resto de la app
-//            Surface(color = BrandBlack, modifier = Modifier.fillMaxWidth()) {
-//                Text(
-//                    text = "📋 Inventario",
-//                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-//                    color = BrandWarmWhite,
-//                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp)
-//                )
-//            }
-
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 stickyHeader {
-                    Surface(color = BrandWarmBackground, modifier = Modifier.fillMaxWidth()) {
-                        Column {
+                    Surface(color = BrandWarmBackground, modifier = Modifier.fillMaxWidth().zIndex(1f), shadowElevation = 4.dp) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 18.dp)
+                        ){
                             Spacer(Modifier.height(12.dp))
                             // 🔍 Buscador
                             OutlinedTextField(
@@ -264,12 +262,18 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                         }
                     }
                 }
-
+                // Indicador de carga mientras Firestore responde
+                item {
+                    StateChargePorducts(
+                        isLoading = isLoadingProductos,
+                        listaVacia = productosFiltrados.isEmpty()
+                    )}
+                ///Lista de productos
                 items(productosFiltrados) { producto ->
                     Spacer(Modifier.height(12.dp))
                     val stockBajo = producto.stock <= 3
                     Card(
-                        modifier = Modifier.fillMaxWidth().border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp).border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
                         elevation = CardDefaults.cardElevation(2.dp)
@@ -350,6 +354,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         // Dialog imagen
         if (showIMG) {
             AlertDialog(onDismissRequest = { showIMG = false },
+                containerColor = BrandWarmWhite,
                 text = { Column(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp), horizontalAlignment = Alignment.CenterHorizontally) { if (datoimg != "") ImagenDesdePosibleBase64OUrl(datoimg, modifier = Modifier.size(400.dp)) else Text("No existe imagen"); Spacer(Modifier.height(12.dp)) } },
                 confirmButton = { TextButton(onClick = { showIMG = false }) { Text("Cerrar") } }, dismissButton = {}
             )
@@ -358,6 +363,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         // Dialog detalle
         if (showVerDialog) {
             AlertDialog(onDismissRequest = { showVerDialog = false },
+                containerColor = BrandWarmWhite,
                 text = {
                     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                         selectedProduct?.let { product ->
@@ -694,6 +700,32 @@ fun LoadingDialog(message: String, onDismiss: (() -> Unit)? = null) {
                 CircularProgressIndicator(color = BrandBlack)
                 Spacer(Modifier.height(12.dp))
                 Text(message, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
+    }
+}
+
+@Composable
+fun StateChargePorducts(isLoading: Boolean, listaVacia:Boolean, modifier: Modifier = Modifier){
+    when{
+        isLoading ->{
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(top=48.dp),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator(color = BrandBlack)
+            }
+        }
+        listaVacia ->{
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = "No se encontraron productos",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = BrandTextSecondary
+                )
             }
         }
     }
