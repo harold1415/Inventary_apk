@@ -118,8 +118,6 @@ fun HomeScreen(
         }
     ) {
         Scaffold(
-            containerColor = BrandWarmBackground,
-            modifier = Modifier.statusBarsPadding(),
             topBar = {
                 TopAppBar(
                     title = { Text("Dashboard", color = BrandWarmWhite) },
@@ -130,7 +128,9 @@ fun HomeScreen(
                         }
                     }
                 )
-            }
+            },
+            containerColor = BrandWarmBackground,
+//            modifier = Modifier.statusBarsPadding() IMPIDE QUE EL TOPAPPBAR PINTE EL FONDO DE LA BARRA DE NOTIFICACIONES
         ) { padding ->
             Column(
                 modifier = Modifier

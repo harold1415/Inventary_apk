@@ -306,6 +306,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                 if (eliminarDialog) {
                                     AlertDialog(
                                         onDismissRequest = { eliminarDialog = false },
+                                        containerColor = BrandWarmWhite,
                                         title = { Text("ELIMINAR PRODUCTO", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
                                         text = {
                                             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -391,6 +392,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         if (showDialog) {
             AlertDialog(
                 onDismissRequest = {},
+                containerColor = BrandWarmWhite,
                 confirmButton = {
                     Button(
                         onClick = {
@@ -492,6 +494,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
             var editprecioMay by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precioxMayor.toString()) }
             AlertDialog(
                 onDismissRequest = { showEditDialog = false },
+                containerColor = BrandWarmWhite,
                 confirmButton = {
                     Button(
                         onClick = {
