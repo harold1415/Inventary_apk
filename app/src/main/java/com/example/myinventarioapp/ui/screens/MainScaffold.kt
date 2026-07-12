@@ -141,7 +141,7 @@ fun MainScaffold(
                 }
 
                 composable(
-                    "SearchProducts?codigoEscaneado?={codigoEscaneado}",
+                    "SearchProducts?codigoEscaneado={codigoEscaneado}",
                     listOf(
                         navArgument("codigoEscaneado"){
                             type = NavType.StringType
