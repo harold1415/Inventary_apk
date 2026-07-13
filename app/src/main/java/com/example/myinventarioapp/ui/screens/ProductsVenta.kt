@@ -49,6 +49,7 @@ import com.example.myinventarioapp.ui.theme.StockLowColor
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.graphics.Color
 
 
 @SuppressLint("DefaultLocale")
@@ -206,8 +207,9 @@ fun ProductsVenta(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Botón restar
+                    val enabled = (cantPro.toLongOrNull() ?: 1L)>1
                     IconButton(
-                        enabled = (cantPro.toLongOrNull() ?: 1L)>1,
+                        enabled = enabled,
                         onClick = {
                             val actual = cantPro.toLongOrNull() ?: 0L
                             if (actual > 1) {
@@ -216,7 +218,9 @@ fun ProductsVenta(
                             }
                         }
                     ) {
-                        Icon(Icons.Default.Remove, contentDescription = "Restar", tint = BrandBlack)
+                        Icon(Icons.Default.Remove, contentDescription = "Restar",
+                            tint = if(enabled) BrandBlack else Color.Gray
+                        )
                     }
 
                     // Campo de cantidad — puedes también escribir directamente
@@ -224,7 +228,7 @@ fun ProductsVenta(
                         value = cantPro,
                         onValueChange = {
                             cantPro = it
-                            cantidaderror = it.isEmpty() || it.toLongOrNull() == null
+                            cantidaderror = it.isEmpty() || it.toLongOrNull() == null || (it.toLongOrNull() ?: 0L)<1
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
@@ -256,10 +260,16 @@ fun ProductsVenta(
                     }
                 }
             }
+            //MENSAJES QUE SALEN EN EL CONTENEDOR DE LA CANTIDAD
+            val cantprenda = cantPro.toLongOrNull()
             if (cantidaderror) {
                 Text(
-                    text = if (cantPro.isEmpty()) "El campo no puede estar vacío"
-                    else "Debe ingresar un número válido",
+                    text = when {
+                        cantPro.isEmpty() ->"El campo no puede estar vacio"
+                        cantprenda == null -> "Debe de ingresar un número valido"
+                        cantprenda < 1 -> "Debe de tener como minimo una unidad"
+                        else -> ""
+                    },
                     color = StockLowColor,
                     style = MaterialTheme.typography.bodySmall
                 )
