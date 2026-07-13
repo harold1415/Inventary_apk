@@ -107,8 +107,8 @@ fun DetailVenta(
     ventaId: String = "New",
     navController: NavController
 ) {
-    // Controla los íconos de la Status Bar — negro con íconos blancos
-    AjustarBarraEstado(darkIcons = false)
+//    // Controla los íconos de la Status Bar — negro con íconos blancos
+//    AjustarBarraEstado(darkIcons = false)
 
     // Estados de UI del formulario — pueden quedarse en el Composable
     var incluirCliente by remember { mutableStateOf(false) }

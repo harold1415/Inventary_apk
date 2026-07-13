@@ -2,6 +2,8 @@ package com.example.myinventarioapp.ui.screens
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,25 +12,43 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
+import com.example.myinventarioapp.ui.theme.BrandBlack
+import com.example.myinventarioapp.ui.theme.BrandTextSecondary
+import com.example.myinventarioapp.ui.theme.BrandWarmBackground
+import com.example.myinventarioapp.ui.theme.BrandWarmWhite
+import com.example.myinventarioapp.ui.theme.BrandWoodLight
+import com.example.myinventarioapp.ui.theme.BrandWoodMedium
+import com.example.myinventarioapp.ui.theme.StockLowColor
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 
 @SuppressLint("DefaultLocale")
@@ -39,32 +59,73 @@ fun ProductsVenta(
     ventaViewModel: VentaViewModel,
     onSearch: () -> Unit
 ) {
+    // Controla los íconos de la Status Bar
+    AjustarBarraEstado(darkIcons = false)
+
+    // ── Estados del formulario — igual que antes, sin cambios ──────────────
     var nombreProduct by remember { mutableStateOf("") }
     var precioProduct by remember { mutableStateOf("") }
-    var cantPro by remember { mutableStateOf("") }
-    var total by remember { mutableDoubleStateOf(0.0) } // antes era Int
+    var cantPro by remember { mutableStateOf("1") }
+    var total by remember { mutableDoubleStateOf(0.0) }
     var descuento by remember { mutableDoubleStateOf(0.0) }
-    var ganancia by remember {mutableDoubleStateOf(0.0)}
-    //condicion del error en el campo de cantidad
+    var ganancia by remember { mutableDoubleStateOf(0.0) }
     var cantidaderror by remember { mutableStateOf(false) }
+    var mostrarGanancia by remember { mutableStateOf(false) }
 
-
-    // DATOS DEL PRODUCTO QUE ESCOGIMOS
-    val productoSeleccionado = ventaViewModel.oneproduct.value// observa la lista
+    // TODO: ViewModel — productoSeleccionado debería observarse como StateFlow
+    val productoSeleccionado = ventaViewModel.oneproduct.value
     var selectedDiscount by remember { mutableStateOf<String?>(null) }
     var selectedGeneralDiscount by remember { mutableStateOf("") }
     var selectedUnitDiscount by remember { mutableStateOf("") }
 
+    // Rellena nombre y precio cuando se selecciona un producto
+    LaunchedEffect(productoSeleccionado) {
+        productoSeleccionado?.let {
+            nombreProduct = "${it.nombre} ${it.talla}"
+            precioProduct = it.precio.toString()
+        }
+    }
+
+    // ── Cálculo del total — lógica intacta ────────────────────────────────
+    val cantidadNum = cantPro.toLongOrNull() ?: 0L
+    val descuentoUnit = selectedUnitDiscount.toDoubleOrNull() ?: 0.0
+    val descuentoGeneral = selectedGeneralDiscount.toDoubleOrNull() ?: 0.0
+
+    if (productoSeleccionado != null) {
+        val (desc, tot, gan) = calcularTotal(
+            productoSeleccionado.precio,
+            cantidadNum,
+            selectedDiscount,
+            descuentoUnit,
+            descuentoGeneral,
+            productoSeleccionado.costo
+        )
+        descuento = desc
+        total = tot
+        ganancia = gan
+        Log.d("ganar", ":$ganancia")
+    }
+
     Scaffold(
+        containerColor = BrandWarmBackground,
         topBar = {
             TopAppBar(
-                title = { Text("\uD83D\uDCC4 Detalle del producto")},
+                title = {
+                    Text(
+                        "📄 Detalle del producto",
+                        color = BrandWarmWhite
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBlack),
                 actions = {
-                    // ✅ Botón Guardar
-                    IconButton(
-                        onClick = onSearch,
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Buscar producto", modifier = Modifier.size(40.dp))
+                    // Botón para ir a buscar otro producto
+                    IconButton(onClick = onSearch) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Buscar producto",
+                            tint = BrandWarmWhite,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             )
@@ -75,145 +136,288 @@ fun ProductsVenta(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
 
-            LaunchedEffect(productoSeleccionado) {
-                productoSeleccionado?.let {
-                    nombreProduct = "${it.nombre} ${it.talla}"
-                    precioProduct = it.precio.toString()
+            // ── Card del producto seleccionado ────────────────────────────
+            if (productoSeleccionado != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(
+                            text = nombreProduct,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandBlack,
+                            maxLines = 2
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Talla: ${productoSeleccionado.talla}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
+                            Text("Stock: ${productoSeleccionado.stock}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
+                            Text("Sucursal: ${productoSeleccionado.local}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
+                        Spacer(Modifier.height(8.dp))
+                        // Precio editable por si quieren cambiarlo
+                        OutlinedTextField(
+                            value = precioProduct,
+                            onValueChange = { precioProduct = it },
+                            label = { Text("Precio unitario (S/)") },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandBlack,
+                                unfocusedBorderColor = BrandWoodMedium
+                            )
+                        )
+                    }
                 }
             }
-            // Mostrar campos solo si se seleccionó un producto
-            if (productoSeleccionado != null) {
-                OutlinedTextField(
-                    value = nombreProduct,
-                    onValueChange = {},
-                    label = { Text("Nombre del producto") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(8.dp))
+
+            // ── Cantidad con botones +/- ──────────────────────────────────
+            Text(
+                "Cantidad",
+                style = MaterialTheme.typography.labelMedium,
+                color = BrandTextSecondary
+            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, if (cantidaderror) StockLowColor else BrandWoodLight, RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
+                elevation = CardDefaults.cardElevation(2.dp)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = precioProduct,
-                        onValueChange = {
-                            precioProduct = it
-                        },
-                        label = { Text("Precio") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp), // pequeño espacio a la derecha
-                        isError = cantidaderror
-                    )
-                    Spacer(Modifier.height(8.dp))
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Botón restar
+                    IconButton(
+                        enabled = (cantPro.toLongOrNull() ?: 1L)>1,
+                        onClick = {
+                            val actual = cantPro.toLongOrNull() ?: 0L
+                            if (actual > 1) {
+                                cantPro = (actual - 1).toString()
+                                cantidaderror = false
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Remove, contentDescription = "Restar", tint = BrandBlack)
+                    }
+
+                    // Campo de cantidad — puedes también escribir directamente
                     OutlinedTextField(
                         value = cantPro,
                         onValueChange = {
                             cantPro = it
-                            cantidaderror = it.isEmpty() || it.toIntOrNull() == null
+                            cantidaderror = it.isEmpty() || it.toLongOrNull() == null
                         },
-                        label = { Text("Cantidad") },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Next
                         ),
-                        modifier = Modifier
-                            .weight(1f),
-                        isError = cantidaderror
+                        modifier = Modifier.width(80.dp),
+                        singleLine = true,
+                        isError = cantidaderror,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandBlack,
+                            unfocusedBorderColor = BrandWoodMedium
+                        ),
+                        textStyle = TextStyle(
+                            textAlign = TextAlign.Center,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
+
+                    // Botón sumar
+                    IconButton(
+                        onClick = {
+                            val actual = cantPro.toLongOrNull() ?: 0L
+                            cantPro = (actual + 1).toString()
+                            cantidaderror = false
+                        }
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Sumar", tint = BrandBlack)
+                    }
                 }
             }
-            Spacer(Modifier.height(8.dp))
-//            if(cantidadNum <=1){
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = selectedDiscount == "unit",
-                        onCheckedChange = { checked ->
-                            selectedDiscount = if (checked) "unit" else null
-                        }
-                    )
-                    Text("Descuento por prenda")
-                }
-                Spacer(Modifier.height(8.dp))
-//            }else{
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = selectedDiscount == "general",
-                        onCheckedChange = { checked ->
-                            selectedDiscount = if (checked) "general" else null
-                        }
-                    )
-                    Text("Descuento General")
-                }
-//            }
+            if (cantidaderror) {
+                Text(
+                    text = if (cantPro.isEmpty()) "El campo no puede estar vacío"
+                    else "Debe ingresar un número válido",
+                    color = StockLowColor,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
+            // ── Tipo de descuento como chips ──────────────────────────────
+            Text(
+                "Tipo de descuento",
+                style = MaterialTheme.typography.labelMedium,
+                color = BrandTextSecondary
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Chip: Sin descuento
+                DiscountChip(
+                    label = "Sin descuento",
+                    selected = selectedDiscount == null,
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        selectedDiscount = null
+                        selectedUnitDiscount = ""
+                        selectedGeneralDiscount = ""
+                    }
+                )
+                // Chip: Por prenda (unitario)
+                DiscountChip(
+                    label = "Por prenda",
+                    selected = selectedDiscount == "unit",
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        selectedDiscount = "unit"
+                        selectedGeneralDiscount = ""
+                    }
+                )
+                // Chip: General (sobre el total)
+                DiscountChip(
+                    label = "General",
+                    selected = selectedDiscount == "general",
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        selectedDiscount = "general"
+                        selectedUnitDiscount = ""
+                    }
+                )
+            }
+
+            // ── Campo de descuento — aparece según el tipo elegido ────────
             if (selectedDiscount == "unit") {
                 OutlinedTextField(
                     value = selectedUnitDiscount,
-                    onValueChange = {
-                        selectedUnitDiscount = it
-                    },
-                    label = { Text("Descuento unitario") },
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = { selectedUnitDiscount = it },
+                    label = { Text("Descuento por prenda (S/)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandBlack,
+                        unfocusedBorderColor = BrandWoodMedium
+                    )
                 )
-                Spacer(Modifier.height(8.dp))
             }
             if (selectedDiscount == "general") {
                 OutlinedTextField(
                     value = selectedGeneralDiscount,
-                    onValueChange = {
-                        selectedGeneralDiscount = it
-                    },
-                    label = { Text("Descuento general") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(16.dp))
-            }
-            //mensaje error de cantidad
-            if (cantidaderror) {
-                Text(
-                    text = if (cantPro.isEmpty()) "El campo no puede estar vacio"
-                    else "Debe de ingresar un numero valido",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    onValueChange = { selectedGeneralDiscount = it },
+                    label = { Text("Descuento general (S/)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = BrandBlack,
+                        unfocusedBorderColor = BrandWoodMedium
+                    )
                 )
             }
-            Spacer(Modifier.height(8.dp))
-            val cantidadNum = cantPro.toLongOrNull() ?: 0L
-            val descuentoUnit = selectedUnitDiscount.toDoubleOrNull() ?: 0.0
-            val descuentoGeneral = selectedGeneralDiscount.toDoubleOrNull() ?: 0.0
 
-            if(productoSeleccionado != null) {
-                val (desc, tot, gan) = calcularTotal(
-                    productoSeleccionado.precio,
-                    cantidadNum,
-                    selectedDiscount,
-                    descuentoUnit,
-                    descuentoGeneral,
-                    productoSeleccionado.costo
-                )
-                descuento = desc
-                total = tot
-                ganancia = gan
-                Log.d("ganar",":$ganancia")
-            }
-            val totalFormateado = String.format("S/ %.2f", total)
-            OutlinedTextField(
-                value = totalFormateado,
-                onValueChange = {
-                    cantidaderror = it.isEmpty() || it.toIntOrNull() == null
-                },
-                readOnly = true,
-                label = { Text("Total") },
+            // ── Card de total en negro ────────────────────────────────────
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(8.dp))
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = BrandBlack),
+                elevation = CardDefaults.cardElevation(2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "Total",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = BrandWoodMedium
+                        )
+                        Spacer(
+                            Modifier.height(4.dp)
+                        )
+                        Text(
+                            "S/ ${"%.2f".format(total)}",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandWarmWhite
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Ganancia",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = BrandWoodMedium
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    mostrarGanancia = !mostrarGanancia
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (mostrarGanancia)
+                                        Icons.Default.Visibility
+                                    else
+                                        Icons.Default.VisibilityOff,
+                                    contentDescription = "Mostrar ganancia",
+                                    tint = BrandWoodMedium,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = if (mostrarGanancia)
+                                "S/ ${"%.2f".format(ganancia)}"
+                            else
+                                "S/ ••••",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = BrandWoodMedium
+                        )
+                    }
+                }
+            }
+
+            // ── Botón agregar a la venta ──────────────────────────────────
+            // TODO: ViewModel — agregarProducto() ya está en VentaViewModel, está bien
             Button(
                 onClick = {
-                    val cantidad = cantPro.toLong() // convertimos el string en int para guardalo
-                    if (productoSeleccionado!= null && nombreProduct.isNotBlank() && cantPro.isNotBlank()) {
+                    val cantidad = cantPro.toLong()
+                    if (productoSeleccionado != null && nombreProduct.isNotBlank() && cantPro.isNotBlank()) {
                         ventaViewModel.agregarProducto(
                             productoSeleccionado.codigo,
                             productoSeleccionado.nombre,
@@ -226,23 +430,67 @@ fun ProductsVenta(
                             ganancia,
                             total
                         )
-                        // ✅ limpiar el producto seleccionado
                         ventaViewModel.resetProduct()
                         val id = ventaViewModel.ventaActualId ?: "New"
-                        onToDetailVenta(id) // ← regresa a DetailVenta
+                        onToDetailVenta(id)
                     }
                 },
-                enabled = nombreProduct.isNotBlank() && cantPro.isNotBlank() && !cantidaderror,
-
-                modifier = Modifier.fillMaxWidth()
+                enabled = productoSeleccionado != null &&
+                        nombreProduct.isNotBlank() &&
+                        cantPro.isNotBlank() &&
+                        !cantidaderror,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandWoodMedium,
+                    contentColor = BrandBlack,
+                    disabledContainerColor = BrandWoodLight,
+                    disabledContentColor = BrandTextSecondary
+                )
             ) {
-                Text("➕ Agregar producto")
+                Text(
+                    "➕ Agregar a la venta",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
-        }
 
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }
 
+// ── Componente chip de descuento ─────────────────────────────────────────────
+@Composable
+private fun DiscountChip(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        color = if (selected) BrandBlack else BrandWarmWhite,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = if (selected) BrandBlack else BrandWoodLight
+        )
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+            color = if (selected) BrandWarmWhite else BrandTextSecondary,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+            maxLines = 1
+        )
+    }
+}
+
+// ── calcularTotal — lógica intacta, sin ningún cambio ────────────────────────
 fun calcularTotal(
     precio: Double,
     cantidad: Long,
@@ -254,21 +502,19 @@ fun calcularTotal(
     return when (tipoDescuento) {
         "unit" -> {
             val desc = cantidad * descuentoUnit
-            val gana=((precio- costo)*cantidad)-desc
+            val gana = ((precio - costo) * cantidad) - desc
             val total = cantidad * (precio - descuentoUnit)
-            Triple(desc, total,gana)
+            Triple(desc, total, gana)
         }
         "general" -> {
-            val gana=((precio- costo)*cantidad)-descuentoGeneral
+            val gana = ((precio - costo) * cantidad) - descuentoGeneral
             val total = (cantidad * precio) - descuentoGeneral
-            Triple(descuentoGeneral, total,gana)
+            Triple(descuentoGeneral, total, gana)
         }
         else -> {
-            val gana = (precio-costo)*cantidad
+            val gana = (precio - costo) * cantidad
             val total = cantidad * precio
             Triple(0.0, total, gana)
         }
     }
 }
-
-

@@ -39,7 +39,8 @@ fun MainScaffold(
     val hideBottomBarRoutes = listOf(
         "detailventa",
         "scannerSearch",
-        "SearchProducts"
+        "SearchProducts",
+        "productsventa"
     )
     val hideBottomBar = hideBottomBarRoutes.any { route ->
         currentRoute?.startsWith(route) == true
