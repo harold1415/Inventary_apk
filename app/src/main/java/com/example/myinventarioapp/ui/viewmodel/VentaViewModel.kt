@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.UUID
 
 // ----------------------------------
 // MODELOS DE DATOS
@@ -133,6 +134,7 @@ class VentaViewModel : ViewModel() {
         Log.d("VentaViewModel", "Producto agregado: $productos")
     }
 
+    // FUNCION DE ELIMINAR UN PRODUCTO  - DETAILVENTA.KT
     fun eliminarProducto(index: Int) {
         if (index in productos.indices) {
             productos.removeAt(index)
