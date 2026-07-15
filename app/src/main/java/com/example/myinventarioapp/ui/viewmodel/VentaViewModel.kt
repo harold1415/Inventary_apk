@@ -35,6 +35,7 @@ data class ProductoU(
 
 //CLASE PARA AGREGAR PRODUCTO A LA LISTA DE DETAILVENTA
 data class Producto(
+    val idDetalle: String = UUID.randomUUID().toString(),
     val codigo: String = "",
     val nombre: String = "",
     val talla:String="",
@@ -114,8 +115,9 @@ class VentaViewModel : ViewModel() {
     fun resetProduct() {
         _oneproduct.value = null
     }
-
+    // FUNCION AGREGA LOS PRODUCTOS - DETAIL VENTA
     fun agregarProducto(
+
         codigo: String,
         nombre: String,
         talla: String,
@@ -128,18 +130,25 @@ class VentaViewModel : ViewModel() {
         total: Double
     ) {
         ventaLocal = local
-        val nuevoProducto = Producto(codigo, nombre,talla,local, cantidad, descuento, costo, precio,ganancia, total)
+        val nuevoProducto = Producto(codigo=codigo, nombre=nombre,talla=talla,local=local, cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
         productos.add(nuevoProducto)
         productosModificados = true
         Log.d("VentaViewModel", "Producto agregado: $productos")
     }
 
     // FUNCION DE ELIMINAR UN PRODUCTO  - DETAILVENTA.KT
-    fun eliminarProducto(index: Int) {
-        if (index in productos.indices) {
-            productos.removeAt(index)
-            productosModificados = true
+//    fun eliminarProducto(index: Int) {
+//        if (index in productos.indices) {
+//            productos.removeAt(index)
+//            productosModificados = true
+//        }
+//    }
+    // ELIMINA UN PRODUCTO EN LA LISTA DE DETAILVENTA
+    fun eliminarProducto(idDetalle: String) {
+        productos.removeAll {
+            it.idDetalle == idDetalle
         }
+        productosModificados = true
     }
 
     fun updateProducto(index: Int, nombre: String, cantidad: Long) {
@@ -223,7 +232,7 @@ class VentaViewModel : ViewModel() {
 //    }
 
     // ----------------------------------
-    // GUARDAR VENTA
+    // GUARDAR LA VENTA EN DETAILVENTA
     // ----------------------------------
     fun guardarVenta(
         context: Context,
@@ -304,7 +313,7 @@ class VentaViewModel : ViewModel() {
     }
 
     // ----------------------------------
-    // ACTUALIZAR VENTA
+    // ACTUALIZAR VENTA EN DETAILVENTA
     // ----------------------------------
     fun actualizarVenta(
         context: Context,

@@ -405,7 +405,7 @@ fun DetailVenta(
             val totalFinal = listaventa.sumOf { it.total }
 
             // Lista de productos con animación de entrada
-            itemsIndexed(listaventa, key = { _, prod -> prod.codigo }) { index, prod ->
+            itemsIndexed(listaventa, key = { _, prod -> prod.idDetalle }) { index, prod ->
                 var visible by remember { mutableStateOf(false) }
                 LaunchedEffect(Unit) {
                     delay(index * 80L)
@@ -460,7 +460,7 @@ fun DetailVenta(
                                     Icon(Icons.Default.Edit, contentDescription = "Editar", tint = BrandWoodMedium, modifier = Modifier.size(20.dp))
                                 }
                                 // TODO: ViewModel — eliminarProducto() ya está en VentaViewModel, está bien
-                                IconButton(onClick = { ventaViewModel.eliminarProducto(index) }) {
+                                IconButton(onClick = { ventaViewModel.eliminarProducto(prod.idDetalle) }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = StockLowColor, modifier = Modifier.size(20.dp))
                                 }
                             }
@@ -513,7 +513,7 @@ fun DetailVenta(
             }
         }
 
-        // Dialog: editar producto de la venta
+        // Dialog: EDITA UN PRODUCTO AÑADIDO AL DETAILVENTA- POR AHORA NO SE USA
         if (showEditDialog && selectedProduct != null && selectedIndex != null) {
             var editNombre by rememberSaveable(selectedProduct) { mutableStateOf(selectedProduct!!.nombre) }
             var editCant by rememberSaveable(selectedProduct) { mutableStateOf(selectedProduct!!.cantidad.toString()) }
