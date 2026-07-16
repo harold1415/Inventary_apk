@@ -88,7 +88,6 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
@@ -227,7 +226,7 @@ fun DetailVenta(
                                         vendedor = username,
                                         fecha = fechaVenta.value,
                                         ganancia = totalGan,
-                                        sucursal = ventaViewModel.ventaLocal
+//                                        sucursal = ventaViewModel.ventaLocal
                                     ) { onVentaScreen() }
                                 }
                             }

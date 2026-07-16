@@ -132,7 +132,11 @@ fun MainScaffold(
                     val ventaId = backStackEntry.arguments?.getString("ventaid") ?: "New"
                     DetailVenta(
                         onVentaScreen = {
-                            innerNavController.popBackStack()
+//                            innerNavController.popBackStack()
+                            innerNavController.navigate("ventas"){
+                                popUpTo("ventas"){inclusive = false}
+                                launchSingleTop = true
+                            }
                         },
                         onSearch = {innerNavController.navigate("SearchProducts")},
                         ventaViewModel = ventaViewModel,
@@ -186,6 +190,9 @@ fun MainScaffold(
                     )
                 }
 
+                composable ("move"){
+                    TransactionsScreen()
+                }
                 composable("setting") {
                     SettingScreen(
                         onNavigateToLocal = { rootNavController.navigate("local") }

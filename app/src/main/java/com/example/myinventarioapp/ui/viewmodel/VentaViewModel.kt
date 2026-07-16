@@ -88,7 +88,6 @@ class VentaViewModel : ViewModel() {
     var productosModificados = false
     var ventaActualId: String? = null
     var ventaLocal:String = ""
-    var hola : String =""
 
     // ----------------------------------
     // FUNCIONES AUXILIARES
@@ -129,7 +128,9 @@ class VentaViewModel : ViewModel() {
         ganancia:Double,
         total: Double
     ) {
-        ventaLocal = local
+        if (ventaLocal.isEmpty()) {
+            ventaLocal = local
+        }
         val nuevoProducto = Producto(codigo=codigo, nombre=nombre,talla=talla,local=local, cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
         productos.add(nuevoProducto)
         productosModificados = true
@@ -323,7 +324,7 @@ class VentaViewModel : ViewModel() {
         vendedor: String?,
         fecha: String?,
         ganancia:Double,
-        sucursal: String,
+//        sucursal: String,
         onSuccess: () -> Unit
     ) {
         Log.d("truefecha1", "fechaOriginal: $fechaOriginal")
@@ -407,7 +408,7 @@ class VentaViewModel : ViewModel() {
                     "productos" to productos.toList(),
                     "totalGen" to totalVenta,
                     "vendedor" to vendedor,
-                    "sucursal" to sucursal,
+//                    "sucursal" to sucursal,
                     "ganancia" to ganancia,
                     "fecha" to fechaTimestamp
                 )

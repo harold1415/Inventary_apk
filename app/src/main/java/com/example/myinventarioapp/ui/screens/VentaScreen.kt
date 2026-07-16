@@ -153,8 +153,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Selector de sucursal sticky
@@ -163,7 +162,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                     color = BrandWarmBackground,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column {
+                    Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                         Spacer(Modifier.height(12.dp))
                         ExposedDropdownMenuBox(
                             expanded = filtredLocal,
@@ -213,7 +212,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                 // Card de venta rediseñada con la paleta de marca
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth().padding(horizontal = 18.dp)
                         .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
