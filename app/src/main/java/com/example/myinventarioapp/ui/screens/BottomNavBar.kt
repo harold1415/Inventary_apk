@@ -3,6 +3,7 @@ package com.example.myinventarioapp.ui.screens
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Receipt
@@ -38,9 +39,10 @@ val bottomTabs = listOf(
     BottomTab("home", "Inicio", Icons.Default.Home),
     BottomTab("inventario", "Inventario", Icons.Default.Inventory),
     BottomTab("ventas", "Ventas", Icons.Default.ShoppingCart),
+    BottomTab("move", "Tranfers", Icons.Default.CompareArrows),
     BottomTab("reporte", "Reportes", Icons.Default.Analytics),
 //    BottomTab("setting", "Config", Icons.Default.Settings)
-    BottomTab("move", "Movimientos", Icons.Default.Receipt)
+
 
 )
 

@@ -82,14 +82,39 @@ fun LoginScreen(
     // Estados para la animación
     val isLoginScreenActive = remember { mutableStateOf(false) }
 
-    val animatedLogoSize by animateDpAsState(
-        targetValue = if (isLoginScreenActive.value) 120.dp else 200.dp,
-        animationSpec = tween(durationMillis = 1000)
+    val cardOffset by animateFloatAsState(
+        targetValue = if(isLoginScreenActive.value) 0f else 900f,
+        animationSpec = tween(
+            durationMillis = 800,
+            easing = FastOutSlowInEasing
+        ),
+        label = "cardMovement"
     )
-
-    val animatedBias by animateFloatAsState(
-        targetValue = if (isLoginScreenActive.value) -0.8f else 0f,
-        animationSpec = tween(durationMillis = 1000)
+    // MUEVE EL TAMAÑO DEL LOGO
+//    val animatedLogoSize by animateDpAsState(
+//        targetValue = if (isLoginScreenActive.value) 120.dp else 200.dp,
+//        animationSpec = tween(durationMillis = 1000)
+//    )
+    val animatedLogoScale by animateFloatAsState(
+        targetValue = if (isLoginScreenActive.value) 0.6f else 1f,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "logoScale"
+    )
+    // MUEVE LA ANIMACION
+//    val animatedBias by animateFloatAsState(
+//        targetValue = if (isLoginScreenActive.value) -0.8f else 0f,
+//        animationSpec = tween(durationMillis = 1000)
+//    )
+    val animatedLogoOffset by animateFloatAsState(
+        targetValue = if (isLoginScreenActive.value) -950f else 0f,
+        animationSpec = tween(
+            durationMillis = 1000,
+            easing = FastOutSlowInEasing
+        ),
+        label = "logoMovement"
     )
 
     val animatedHelloTextAlpha by animateFloatAsState(
@@ -185,20 +210,28 @@ fun LoginScreen(
         // Fondo de marca - Ocupa toda la pantalla
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(
-                    BiasAlignment(
-                        horizontalBias = 0f,
-                        verticalBias = animatedBias
-                    )
-                ), // <--- ESTO LO MUEVE
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center)
+                .graphicsLayer {
+                    translationY = animatedLogoOffset
+                },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo animado que cambia de tamaño y posición
+//            Image(
+//                painter = painterResource(id = APP_LOGO_RES_ID),
+//                contentDescription = "App Logo",
+//                modifier = Modifier.size(animatedLogoSize)
+//            )
             Image(
                 painter = painterResource(id = APP_LOGO_RES_ID),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(animatedLogoSize)
+                modifier = Modifier
+                    .size(200.dp)
+                    .graphicsLayer {
+                        scaleX = animatedLogoScale
+                        scaleY = animatedLogoScale
+                    }
             )
 
             // Texto de bienvenida animado (Hola, [Usuario])
@@ -215,23 +248,33 @@ fun LoginScreen(
 
         // Tarjeta de login que sube y se posiciona
         AnimatedVisibility(
-            visible = isLoginScreenActive.value,
-            enter = slideInVertically(
-                initialOffsetY = { it },
-                animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)
-            ) +
-                    fadeIn(animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter) // Asegura que se ancle a la parte inferior
+//            visible = isLoginScreenActive.value,
+//            enter = slideInVertically(
+//                initialOffsetY = { it },
+//                animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)
+//            ) +
+//                    fadeIn(animationSpec = tween(durationMillis = 700, delayMillis = 300, easing = FastOutSlowInEasing)),
+//            exit = fadeOut(),
+//            modifier = Modifier.align(Alignment.BottomCenter) // Asegura que se ancle a la parte inferior
+                visible = isLoginScreenActive.value,
+                enter = fadeIn(
+                    animationSpec = tween(500)
+                ),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.BottomCenter)
+
         ) {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.65f), // Ajustado para que ocupe el 65% inferior
+                    .fillMaxHeight(0.65f)
+                    .graphicsLayer {
+                        translationY = cardOffset
+                    },
                 shape = RoundedCornerShape(
                     topStart = 32.dp,
                     topEnd = 32.dp
-                ), // Esquinas redondeadas
+                ),
                 color = Color(0xFFF5EFE6)
             ) {
                 Column(

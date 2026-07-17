@@ -42,6 +42,7 @@ import android.util.Base64
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -51,6 +52,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FilterList
@@ -58,6 +60,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -362,29 +365,183 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         }
 
         // Dialog detalle
+//        if (showVerDialog) {
+//            AlertDialog(onDismissRequest = { showVerDialog = false },
+//                containerColor = BrandWarmWhite,
+//                text = {
+//                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+//                        selectedProduct?.let { product ->
+//                            Text(product.nombre, style = MaterialTheme.typography.titleLarge, color = BrandBlack)
+//                            Spacer(Modifier.height(8.dp))
+//                            val detalles = buildList {
+//                                add("Codigo" to product.codigo); add("Modelo" to product.modeloCod); add("Tipo" to product.tipo); add("Material" to product.material); add("Marca" to product.marca); add("Color" to product.color); add("Diseño" to product.diseno)
+//                                if (product.manga != "") add("Manga" to product.manga)
+//                                add("Talla" to product.talla); add("Stock" to product.stock.toString()); add("Corte" to product.corte); add("Local" to product.local); add("Costo" to "S/${product.costo}"); add("Precio Unit" to "S/${product.precio}"); add("Precio x Mayor" to "S/${product.precioxMayor}"); add("Fecha Ingreso" to formatFecha(product.fecha))
+//                            }
+//                            detalles.forEach { (label, value) ->
+//                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+//                                    Text("$label:", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), color = BrandTextSecondary)
+//                                    Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+//                                }
+//                            }
+//                        } ?: Text("Sin producto seleccionado")
+//                    }
+//                },
+//                confirmButton = { TextButton(onClick = { showVerDialog = false }) { Text("Cerrar") } }
+//            )
+//        }
         if (showVerDialog) {
-            AlertDialog(onDismissRequest = { showVerDialog = false },
+
+            AlertDialog(
+                onDismissRequest = { showVerDialog = false },
                 containerColor = BrandWarmWhite,
-                text = {
-                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                        selectedProduct?.let { product ->
-                            Text(product.nombre, style = MaterialTheme.typography.titleLarge, color = BrandBlack)
-                            Spacer(Modifier.height(8.dp))
-                            val detalles = buildList {
-                                add("Codigo" to product.codigo); add("Modelo" to product.modeloCod); add("Tipo" to product.tipo); add("Material" to product.material); add("Marca" to product.marca); add("Color" to product.color); add("Diseño" to product.diseno)
-                                if (product.manga != "") add("Manga" to product.manga)
-                                add("Talla" to product.talla); add("Stock" to product.stock.toString()); add("Corte" to product.corte); add("Local" to product.local); add("Costo" to "S/${product.costo}"); add("Precio Unit" to "S/${product.precio}"); add("Precio x Mayor" to "S/${product.precioxMayor}"); add("Fecha Ingreso" to formatFecha(product.fecha))
-                            }
-                            detalles.forEach { (label, value) ->
-                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("$label:", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), color = BrandTextSecondary)
-                                    Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-                                }
-                            }
-                        } ?: Text("Sin producto seleccionado")
+                shape = RoundedCornerShape(24.dp),
+
+                title = {
+                    selectedProduct?.let { product ->
+
+                        Column {
+
+                            Text(
+                                text = product.nombre,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack
+                            )
+
+                            Text(
+                                text = "Código: ${product.codigo}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = BrandTextSecondary
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            HorizontalDivider()
+                        }
                     }
                 },
-                confirmButton = { TextButton(onClick = { showVerDialog = false }) { Text("Cerrar") } }
+
+                text = {
+
+                    selectedProduct?.let { product ->
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 500.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+
+                            //======================
+                            // Información General
+                            //======================
+
+                            Text(
+                                "📦 Información General",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack //
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            InfoCard("Modelo", product.modeloCod)
+                            InfoCard("Tipo", product.tipo)
+                            InfoCard("Material", product.material)
+                            InfoCard("Marca", product.marca)
+                            InfoCard("Color", product.color)
+                            InfoCard("Diseño", product.diseno)
+
+                            if (product.manga.isNotBlank()) {
+                                InfoCard("Manga", product.manga)
+                            }
+
+                            InfoCard("Talla", product.talla)
+                            InfoCard("Corte", product.corte)
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            //======================
+                            // Inventario
+                            //======================
+
+                            Text(
+                                "📦 Inventario",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack //
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            InfoCard("Stock", product.stock.toString())
+                            InfoCard("Local", product.local)
+                            InfoCard("Fecha Ingreso", formatFecha(product.fecha))
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            //======================
+                            // Precios
+                            //======================
+
+                            Text(
+                                "💰 Precios",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack //
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            InfoCard("Costo", "S/ ${product.costo}")
+                            InfoCard("Precio Unitario", "S/ ${product.precio}")
+                            InfoCard("Precio por Mayor", "S/ ${product.precioxMayor}")
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+
+                                Surface(
+                                    color = Color(0xFFE8F5E9),
+                                    shape = RoundedCornerShape(30.dp)
+                                ) {
+
+                                    Text(
+                                        text = "Stock: ${product.stock}",
+                                        modifier = Modifier.padding(
+                                            horizontal = 18.dp,
+                                            vertical = 8.dp
+                                        ),
+                                        color = Color(0xFF2E7D32),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                    } ?: Text("Sin producto seleccionado")
+                },
+
+                confirmButton = {
+
+                    FilledTonalButton(
+                        onClick = { showVerDialog = false }
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Text("Cerrar")
+                    }
+                }
             )
         }
 
@@ -476,7 +633,84 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         }
 
         // Dialog editar
+//        if (showEditDialog && selectedProduct != null) {
+//            var editNombre by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.nombre) }
+//            var editTalla by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.talla) }
+//            var editType by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.tipo) }
+//            var editColor by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.color) }
+//            var editManga by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.manga) }
+//            var editBrand by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.marca) }
+//            var editDesign by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.diseno) }
+//            var editStyle by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.corte) }
+//            var editcodmodel by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.modeloCod) }
+//            var editMaterial by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.material) }
+//            var editStock by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.stock.toString()) }
+//            var editLocal by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.local) }
+//            var editCosto by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.costo.toString()) }
+//            var editPrecio by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precio.toString()) }
+//            var editprecioMay by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precioxMayor.toString()) }
+//            AlertDialog(
+//                onDismissRequest = { showEditDialog = false },
+//                containerColor = BrandWarmWhite,
+//                confirmButton = {
+//                    Button(
+//                        onClick = {
+//                            editNombre = "$editType $editMaterial $editBrand $editColor"
+//                            val stockInt = editStock.toIntOrNull() ?: 0
+//                            val costoInt = editCosto.toDoubleOrNull() ?: 0.0
+//                            val precioInt = editPrecio.toDoubleOrNull() ?: 0.0
+//                            val precioMayor = editprecioMay.toDoubleOrNull() ?: 0.0
+//                            loadingMessage = "Editando producto..."; isUploading = true
+//                            val actualizacion = mapOf("nombre" to editNombre, "tipo" to editType, "material" to editMaterial, "talla" to editTalla, "diseno" to editDesign, "color" to editColor, "modeloCod" to editcodmodel, "marca" to editBrand, "manga" to editManga, "stock" to stockInt, "corte" to editStyle, "local" to editLocal, "costo" to costoInt, "precio" to precioInt, "precioXMayor" to precioMayor)
+//                            db.collection("productos").document(selectedProduct.id).update(actualizacion)
+//                                .addOnSuccessListener { scope.launch { delay(3000); isUploading = false; showEditDialog = false; Toast.makeText(context, "Producto actualizado", Toast.LENGTH_SHORT).show() } }
+//                                .addOnFailureListener { Toast.makeText(context, "Error al actualizar: ${it.message}", Toast.LENGTH_SHORT).show(); showEditDialog = false }
+//                        },
+//                        colors = ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
+//                    ) { Text("Guardar") }
+//                },
+//                dismissButton = { TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") } },
+//                title = { Text("Editar producto") },
+//                text = {
+//                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editcodmodel, onValueChange = { editcodmodel = it }, label = { Text("Codigo del modelo") }, colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        ClothingItem(type = editType, onTypeChange = { editType = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        MaterialItem(material = editMaterial, onMaterialChange = { editMaterial = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        TallaDropdown(talla = editTalla, onTallaChange = { editTalla = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editStock, onValueChange = { editStock = it }, label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editColor, onValueChange = { editColor = it }, label = { Text("Color") }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        Spacer(Modifier.height(8.dp))
+//                        BrandItem(brand = editBrand, onBrandChange = { editBrand = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        DesingItem(desing = editDesign, onDesingChange = { editDesign = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        CutItem(corte = editStyle, onCorteChange = { editStyle = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        if (editType == "Camisa" || editType == "Polo") TypeSleeve(sleeve = editManga, onSleeveChange = { editManga = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        LocalOption(listLocal = locales, local = editLocal, onLocalChange = { editLocal = it })
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editCosto, onValueChange = { editCosto = it }, label = { Text("Costo") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editprecioMay, onValueChange = { editprecioMay = it }, label = { Text("Precio Mayor") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        Spacer(Modifier.height(8.dp))
+//                        OutlinedTextField(value = editPrecio, onValueChange = { editPrecio = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+//                        Spacer(Modifier.height(8.dp))
+//                        Button(onClick = { launcher.launch("image/*") }, colors = ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)) { Text("Seleccionar imagen") }
+//                        miBitmapSeleccionado?.let { bmp -> Image(bitmap = bmp.asImageBitmap(), contentDescription = "Preview", modifier = Modifier.size(120.dp).padding(bottom = 8.dp)) }
+//                    }
+//                }
+//            )
+//        }
         if (showEditDialog && selectedProduct != null) {
+            var showTallaDialog by remember {
+                mutableStateOf(false)
+            }
             var editNombre by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.nombre) }
             var editTalla by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.talla) }
             var editType by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.tipo) }
@@ -492,65 +726,527 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
             var editCosto by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.costo.toString()) }
             var editPrecio by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precio.toString()) }
             var editprecioMay by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precioxMayor.toString()) }
-            AlertDialog(
-                onDismissRequest = { showEditDialog = false },
-                containerColor = BrandWarmWhite,
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            editNombre = "$editType $editMaterial $editBrand $editColor"
-                            val stockInt = editStock.toIntOrNull() ?: 0
-                            val costoInt = editCosto.toDoubleOrNull() ?: 0.0
-                            val precioInt = editPrecio.toDoubleOrNull() ?: 0.0
-                            val precioMayor = editprecioMay.toDoubleOrNull() ?: 0.0
-                            loadingMessage = "Editando producto..."; isUploading = true
-                            val actualizacion = mapOf("nombre" to editNombre, "tipo" to editType, "material" to editMaterial, "talla" to editTalla, "diseno" to editDesign, "color" to editColor, "modeloCod" to editcodmodel, "marca" to editBrand, "manga" to editManga, "stock" to stockInt, "corte" to editStyle, "local" to editLocal, "costo" to costoInt, "precio" to precioInt, "precioXMayor" to precioMayor)
-                            db.collection("productos").document(selectedProduct.id).update(actualizacion)
-                                .addOnSuccessListener { scope.launch { delay(3000); isUploading = false; showEditDialog = false; Toast.makeText(context, "Producto actualizado", Toast.LENGTH_SHORT).show() } }
-                                .addOnFailureListener { Toast.makeText(context, "Error al actualizar: ${it.message}", Toast.LENGTH_SHORT).show(); showEditDialog = false }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
-                    ) { Text("Guardar") }
-                },
-                dismissButton = { TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") } },
-                title = { Text("Editar producto") },
-                text = {
-                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editcodmodel, onValueChange = { editcodmodel = it }, label = { Text("Codigo del modelo") }, colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        ClothingItem(type = editType, onTypeChange = { editType = it })
-                        Spacer(Modifier.height(8.dp))
-                        MaterialItem(material = editMaterial, onMaterialChange = { editMaterial = it })
-                        Spacer(Modifier.height(8.dp))
-                        TallaDropdown(talla = editTalla, onTallaChange = { editTalla = it })
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editStock, onValueChange = { editStock = it }, label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editColor, onValueChange = { editColor = it }, label = { Text("Color") }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        Spacer(Modifier.height(8.dp))
-                        BrandItem(brand = editBrand, onBrandChange = { editBrand = it })
-                        Spacer(Modifier.height(8.dp))
-                        DesingItem(desing = editDesign, onDesingChange = { editDesign = it })
-                        Spacer(Modifier.height(8.dp))
-                        CutItem(corte = editStyle, onCorteChange = { editStyle = it })
-                        Spacer(Modifier.height(8.dp))
-                        if (editType == "Camisa" || editType == "Polo") TypeSleeve(sleeve = editManga, onSleeveChange = { editManga = it })
-                        Spacer(Modifier.height(8.dp))
-                        LocalOption(listLocal = locales, local = editLocal, onLocalChange = { editLocal = it })
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editCosto, onValueChange = { editCosto = it }, label = { Text("Costo") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editprecioMay, onValueChange = { editprecioMay = it }, label = { Text("Precio Mayor") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = editPrecio, onValueChange = { editPrecio = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-                        Spacer(Modifier.height(8.dp))
-                        Button(onClick = { launcher.launch("image/*") }, colors = ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)) { Text("Seleccionar imagen") }
-                        miBitmapSeleccionado?.let { bmp -> Image(bitmap = bmp.asImageBitmap(), contentDescription = "Preview", modifier = Modifier.size(120.dp).padding(bottom = 8.dp)) }
-                    }
-                }
-            )
-        }
+            Dialog(
+                onDismissRequest = { showEditDialog = false }
+            ) {
 
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    color = BrandWarmWhite,
+                    shadowElevation = 12.dp
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .fillMaxWidth()
+                    ) {
+
+
+                        // TITULO
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Column {
+
+                                Text(
+                                    text = "Editar producto",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandBlack
+                                )
+
+                                Text(
+                                    text = selectedProduct.modeloCod,
+                                    fontSize = 13.sp,
+                                    color = Color.Gray
+                                )
+
+                            }
+
+
+                            IconButton(
+                                onClick = { showEditDialog = false }
+                            ) {
+
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cerrar"
+                                )
+
+                            }
+
+                        }
+
+
+                        Spacer(
+                            Modifier.height(12.dp)
+                        )
+
+
+                        Divider(
+                            color = BrandWoodMedium
+                        )
+
+
+                        Spacer(
+                            Modifier.height(12.dp)
+                        )
+
+
+                        Column(
+                            modifier = Modifier
+                                .heightIn(max = 550.dp)
+                                .verticalScroll(
+                                    rememberScrollState()
+                                ),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+
+
+                            Text(
+                                "Información del producto",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = BrandBlack
+                            )
+
+
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = editcodmodel,
+                                onValueChange = { editcodmodel = it },
+                                label = {
+                                    Text("Código del modelo")
+                                },
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                )
+                            )
+
+
+                            ClothingItem(
+                                type = editType,
+                                onTypeChange = { editType = it }
+                            )
+
+
+                            MaterialItem(
+                                material = editMaterial,
+                                onMaterialChange = { editMaterial = it }
+                            )
+
+
+//                            TallaDropdown(
+//                                talla = editTalla,
+//                                onTallaChange = { editTalla = it }
+//                            )
+                            // TALLA EN EL FORMULARIO
+//                            OutlinedTextField(
+//                                value = editTalla,
+//                                onValueChange = {},
+//                                readOnly = true,
+//                                label = {
+//                                    Text("Talla")
+//                                },
+//                                trailingIcon = {
+//                                    Icon(
+//                                        Icons.Default.ArrowDropDown,
+//                                        contentDescription = null
+//                                    )
+//                                },
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .clickable {
+//                                        Log.d("TALLA", "CLICK")
+//                                        showTallaDialog = true
+//                                    },
+//                                colors = OutlinedTextFieldDefaults.colors(
+//                                    focusedBorderColor = BrandBlack,
+//                                    unfocusedBorderColor = BrandWoodMedium
+//                                )
+//                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+
+                                        Log.d("TALLA", "CLICK")
+
+                                        showTallaDialog = true
+
+                                    }
+                            ){
+                                OutlinedTextField(
+                                    value = editTalla,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    enabled = false,
+                                    label = {
+                                        Text("Talla")
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledBorderColor = BrandWoodMedium,
+                                        disabledTextColor = BrandBlack,
+                                        disabledLabelColor = BrandBlack
+                                    )
+                                )
+
+                            }
+
+                            Text(
+                                "Detalles",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = BrandBlack
+                            )
+
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+
+
+                                OutlinedTextField(
+                                    modifier = Modifier.weight(1f),
+                                    value = editColor,
+                                    onValueChange = { editColor = it },
+                                    label = { Text("Color") },
+                                    singleLine = true,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = BrandBlack,
+                                        unfocusedBorderColor = BrandWoodMedium
+                                    )
+                                )
+
+
+                                OutlinedTextField(
+                                    modifier = Modifier.weight(1f),
+                                    value = editStock,
+                                    onValueChange = { editStock = it },
+                                    label = { Text("Stock") },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number
+                                    ),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = BrandBlack,
+                                        unfocusedBorderColor = BrandWoodMedium
+                                    )
+                                )
+
+                            }
+
+
+
+                            BrandItem(
+                                brand = editBrand,
+                                onBrandChange = { editBrand = it }
+                            )
+
+
+                            DesingItem(
+                                desing = editDesign,
+                                onDesingChange = { editDesign = it }
+                            )
+
+
+                            CutItem(
+                                corte = editStyle,
+                                onCorteChange = { editStyle = it }
+                            )
+
+
+                            if(
+                                editType == "Camisa" ||
+                                editType == "Polo"
+                            ){
+
+                                TypeSleeve(
+                                    sleeve = editManga,
+                                    onSleeveChange = { editManga = it }
+                                )
+
+                            }
+
+
+
+                            Text(
+                                "Ubicación",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = BrandBlack
+                            )
+
+
+                            LocalOption(
+                                listLocal = locales,
+                                local = editLocal,
+                                onLocalChange = { editLocal = it }
+                            )
+
+
+
+                            Text(
+                                "Precios",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = BrandBlack
+                            )
+
+
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = editCosto,
+                                onValueChange = { editCosto = it },
+                                label = { Text("Costo") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                )
+                            )
+
+
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = editprecioMay,
+                                onValueChange = { editprecioMay = it },
+                                label = { Text("Precio Mayor") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                )
+                            )
+
+
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = editPrecio,
+                                onValueChange = { editPrecio = it },
+                                label = { Text("Precio") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                )
+                            )
+
+
+
+                            Text(
+                                "Imagen",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = BrandBlack
+                            )
+
+
+
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    launcher.launch("image/*")
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BrandWoodMedium,
+                                    contentColor = BrandBlack
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ){
+
+                                Icon(
+                                    Icons.Default.Image,
+                                    contentDescription = null
+                                )
+
+                                Spacer(
+                                    Modifier.width(8.dp)
+                                )
+
+                                Text("Seleccionar imagen")
+
+                            }
+
+
+
+                            miBitmapSeleccionado?.let { bmp ->
+
+                                Image(
+                                    bitmap = bmp.asImageBitmap(),
+                                    contentDescription = "Preview",
+                                    modifier = Modifier
+                                        .size(140.dp)
+                                        .clip(
+                                            RoundedCornerShape(16.dp)
+                                        )
+                                        .align(
+                                            Alignment.CenterHorizontally
+                                        )
+                                )
+
+                            }
+
+
+                        }
+
+
+
+                        Spacer(
+                            Modifier.height(16.dp)
+                        )
+
+
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ){
+
+                            TextButton(
+                                onClick = {
+                                    showEditDialog=false
+                                }
+                            ){
+                                Text("Cancelar")
+                            }
+
+
+                            Spacer(
+                                Modifier.width(8.dp)
+                            )
+
+
+                            Button(
+                                onClick = {
+
+                                    editNombre =
+                                        "$editType $editMaterial $editBrand $editColor"
+
+                                    val stockInt =
+                                        editStock.toIntOrNull() ?: 0
+
+                                    val costoInt =
+                                        editCosto.toDoubleOrNull() ?: 0.0
+
+                                    val precioInt =
+                                        editPrecio.toDoubleOrNull() ?: 0.0
+
+                                    val precioMayor =
+                                        editprecioMay.toDoubleOrNull() ?: 0.0
+
+
+                                    loadingMessage =
+                                        "Editando producto..."
+
+                                    isUploading = true
+
+
+                                    val actualizacion = mapOf(
+                                        "nombre" to editNombre,
+                                        "tipo" to editType,
+                                        "material" to editMaterial,
+                                        "talla" to editTalla,
+                                        "diseno" to editDesign,
+                                        "color" to editColor,
+                                        "modeloCod" to editcodmodel,
+                                        "marca" to editBrand,
+                                        "manga" to editManga,
+                                        "stock" to stockInt,
+                                        "corte" to editStyle,
+                                        "local" to editLocal,
+                                        "costo" to costoInt,
+                                        "precio" to precioInt,
+                                        "precioXMayor" to precioMayor
+                                    )
+
+
+                                    db.collection("productos")
+                                        .document(selectedProduct.id)
+                                        .update(actualizacion)
+                                        .addOnSuccessListener {
+
+                                            scope.launch {
+
+                                                delay(3000)
+
+                                                isUploading=false
+                                                showEditDialog=false
+
+                                                Toast.makeText(
+                                                    context,
+                                                    "Producto actualizado",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+
+                                        }
+
+                                        .addOnFailureListener {
+
+                                            Toast.makeText(
+                                                context,
+                                                "Error al actualizar: ${it.message}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+
+                                        }
+
+
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BrandBlack,
+                                    contentColor = BrandWarmWhite
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ){
+
+                                Text("Guardar")
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+            if(showTallaDialog){
+
+                TallaSelectorDialog(
+                    tallaActual = editTalla,
+
+                    onTallaSeleccionada = {
+                        editTalla = it
+                        showTallaDialog = false
+                    },
+
+                    onCerrar = {
+                        showTallaDialog = false
+                    }
+                )
+
+            }
+        }
         // Dialog imagen zoom
         if (showImageDialog) {
             Dialog(onDismissRequest = { showImageDialog = false }) {
@@ -732,4 +1428,410 @@ fun StateChargePorducts(isLoading: Boolean, listaVacia:Boolean, modifier: Modifi
             }
         }
     }
+}
+
+// DISEÑO DE CARD PARA DIALOG- INFORMACION DEL PRODUCTO
+@Composable
+fun InfoCard(
+    titulo: String,
+    valor: String
+) {
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF7F7F7)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = BrandTextSecondary
+            )
+
+            Text(
+                text = valor,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = BrandBlack
+            )
+        }
+    }
+}
+
+// DISEÑO DEL SELECTOR DE TALLAS
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TallaSelectorDialog(
+    tallaActual: String,
+    onTallaSeleccionada: (String) -> Unit,
+    onCerrar: () -> Unit
+){
+
+    val tallasLetras = listOf(
+        "S",
+        "M",
+        "L",
+        "XL",
+        "2XL",
+        "3XL",
+        "4XL",
+        "5XL",
+        "6XL"
+    )
+
+
+    val tallasNumeros = listOf(
+        "26",
+        "28",
+        "30",
+        "32",
+        "34",
+        "36",
+        "38",
+        "40",
+        "42"
+    )
+
+
+    var tipoTalla by remember {
+
+        mutableStateOf(
+
+            if(tallaActual in tallasLetras)
+                "Letras"
+            else
+                "Números"
+
+        )
+
+    }
+
+
+    val opciones = if(tipoTalla == "Letras")
+        tallasLetras
+    else
+        tallasNumeros
+
+
+
+    Dialog(
+        onDismissRequest = {
+            onCerrar()
+        }
+    ){
+
+
+        Surface(
+
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+
+            shape = RoundedCornerShape(24.dp),
+
+            color = BrandWarmWhite
+
+        ){
+
+
+            Column(
+
+                modifier = Modifier
+                    .padding(20.dp)
+
+            ){
+
+
+                Text(
+
+                    text = "Seleccionar talla",
+
+                    fontSize = 20.sp,
+
+                    fontWeight = FontWeight.Bold,
+
+                    color = BrandBlack
+
+                )
+
+
+                Spacer(
+                    Modifier.height(16.dp)
+                )
+
+
+
+                Text(
+
+                    text = "Tipo de talla",
+
+                    fontWeight = FontWeight.SemiBold,
+
+                    color = BrandBlack
+
+                )
+
+
+                Spacer(
+                    Modifier.height(8.dp)
+                )
+
+
+
+                Row(
+
+                    horizontalArrangement =
+                        Arrangement.spacedBy(10.dp)
+
+                ){
+
+
+                    listOf(
+                        "Letras",
+                        "Números"
+                    ).forEach { tipo ->
+
+
+                        val seleccionado =
+                            tipoTalla == tipo
+
+
+
+                        Surface(
+
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+
+                                    tipoTalla = tipo
+
+                                },
+
+                            shape =
+                                RoundedCornerShape(12.dp),
+
+
+                            color =
+                                if(seleccionado)
+                                    BrandBlack
+                                else
+                                    BrandWarmWhite,
+
+
+                            border =
+                                BorderStroke(
+                                    1.dp,
+                                    BrandWoodMedium
+                                )
+
+                        ){
+
+
+                            Box(
+
+                                modifier =
+                                    Modifier.height(42.dp),
+
+                                contentAlignment =
+                                    Alignment.Center
+
+                            ){
+
+
+                                Text(
+
+                                    text = tipo,
+
+                                    color =
+                                        if(seleccionado)
+                                            BrandWarmWhite
+                                        else
+                                            BrandBlack
+
+                                )
+
+
+                            }
+
+
+                        }
+
+
+                    }
+
+
+                }
+
+
+
+                Spacer(
+                    Modifier.height(18.dp)
+                )
+
+
+
+                Text(
+
+                    text = "Seleccione una talla",
+
+                    fontWeight = FontWeight.SemiBold,
+
+                    color = BrandBlack
+
+                )
+
+
+
+                Spacer(
+                    Modifier.height(10.dp)
+                )
+
+
+
+                FlowRow(
+
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp),
+
+                    verticalArrangement =
+                        Arrangement.spacedBy(8.dp)
+
+                ){
+
+
+                    opciones.forEach { talla ->
+
+
+                        val seleccionado =
+                            tallaActual == talla
+
+
+
+                        Surface(
+
+                            modifier =
+                                Modifier
+                                    .clickable {
+
+                                        onTallaSeleccionada(talla)
+
+                                    },
+
+
+                            shape =
+                                RoundedCornerShape(12.dp),
+
+
+                            color =
+                                if(seleccionado)
+                                    BrandBlack
+                                else
+                                    BrandWarmWhite,
+
+
+                            border =
+                                BorderStroke(
+                                    1.dp,
+                                    BrandWoodMedium
+                                )
+
+
+                        ){
+
+
+                            Box(
+
+                                modifier =
+                                    Modifier
+                                        .width(55.dp)
+                                        .height(42.dp),
+
+                                contentAlignment =
+                                    Alignment.Center
+
+                            ){
+
+
+                                Text(
+
+                                    text = talla,
+
+                                    color =
+                                        if(seleccionado)
+                                            BrandWarmWhite
+                                        else
+                                            BrandBlack,
+
+
+                                    fontWeight =
+                                        FontWeight.SemiBold
+
+                                )
+
+
+                            }
+
+
+                        }
+
+
+                    }
+
+
+                }
+
+
+
+                Spacer(
+                    Modifier.height(20.dp)
+                )
+
+
+
+                TextButton(
+
+                    modifier =
+                        Modifier.align(
+                            Alignment.End
+                        ),
+
+                    onClick = {
+                        onCerrar()
+                    }
+
+                ){
+
+                    Text(
+                        "Cancelar"
+                    )
+
+                }
+
+
+            }
+
+
+        }
+
+
+    }
+
+
 }
