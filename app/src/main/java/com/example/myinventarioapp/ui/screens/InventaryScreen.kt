@@ -632,81 +632,7 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
             )
         }
 
-        // Dialog editar
-//        if (showEditDialog && selectedProduct != null) {
-//            var editNombre by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.nombre) }
-//            var editTalla by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.talla) }
-//            var editType by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.tipo) }
-//            var editColor by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.color) }
-//            var editManga by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.manga) }
-//            var editBrand by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.marca) }
-//            var editDesign by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.diseno) }
-//            var editStyle by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.corte) }
-//            var editcodmodel by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.modeloCod) }
-//            var editMaterial by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.material) }
-//            var editStock by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.stock.toString()) }
-//            var editLocal by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.local) }
-//            var editCosto by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.costo.toString()) }
-//            var editPrecio by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precio.toString()) }
-//            var editprecioMay by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precioxMayor.toString()) }
-//            AlertDialog(
-//                onDismissRequest = { showEditDialog = false },
-//                containerColor = BrandWarmWhite,
-//                confirmButton = {
-//                    Button(
-//                        onClick = {
-//                            editNombre = "$editType $editMaterial $editBrand $editColor"
-//                            val stockInt = editStock.toIntOrNull() ?: 0
-//                            val costoInt = editCosto.toDoubleOrNull() ?: 0.0
-//                            val precioInt = editPrecio.toDoubleOrNull() ?: 0.0
-//                            val precioMayor = editprecioMay.toDoubleOrNull() ?: 0.0
-//                            loadingMessage = "Editando producto..."; isUploading = true
-//                            val actualizacion = mapOf("nombre" to editNombre, "tipo" to editType, "material" to editMaterial, "talla" to editTalla, "diseno" to editDesign, "color" to editColor, "modeloCod" to editcodmodel, "marca" to editBrand, "manga" to editManga, "stock" to stockInt, "corte" to editStyle, "local" to editLocal, "costo" to costoInt, "precio" to precioInt, "precioXMayor" to precioMayor)
-//                            db.collection("productos").document(selectedProduct.id).update(actualizacion)
-//                                .addOnSuccessListener { scope.launch { delay(3000); isUploading = false; showEditDialog = false; Toast.makeText(context, "Producto actualizado", Toast.LENGTH_SHORT).show() } }
-//                                .addOnFailureListener { Toast.makeText(context, "Error al actualizar: ${it.message}", Toast.LENGTH_SHORT).show(); showEditDialog = false }
-//                        },
-//                        colors = ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
-//                    ) { Text("Guardar") }
-//                },
-//                dismissButton = { TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") } },
-//                title = { Text("Editar producto") },
-//                text = {
-//                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editcodmodel, onValueChange = { editcodmodel = it }, label = { Text("Codigo del modelo") }, colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        ClothingItem(type = editType, onTypeChange = { editType = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        MaterialItem(material = editMaterial, onMaterialChange = { editMaterial = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        TallaDropdown(talla = editTalla, onTallaChange = { editTalla = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editStock, onValueChange = { editStock = it }, label = { Text("Stock") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editColor, onValueChange = { editColor = it }, label = { Text("Color") }, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        Spacer(Modifier.height(8.dp))
-//                        BrandItem(brand = editBrand, onBrandChange = { editBrand = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        DesingItem(desing = editDesign, onDesingChange = { editDesign = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        CutItem(corte = editStyle, onCorteChange = { editStyle = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        if (editType == "Camisa" || editType == "Polo") TypeSleeve(sleeve = editManga, onSleeveChange = { editManga = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        LocalOption(listLocal = locales, local = editLocal, onLocalChange = { editLocal = it })
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editCosto, onValueChange = { editCosto = it }, label = { Text("Costo") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editprecioMay, onValueChange = { editprecioMay = it }, label = { Text("Precio Mayor") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        Spacer(Modifier.height(8.dp))
-//                        OutlinedTextField(value = editPrecio, onValueChange = { editPrecio = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
-//                        Spacer(Modifier.height(8.dp))
-//                        Button(onClick = { launcher.launch("image/*") }, colors = ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)) { Text("Seleccionar imagen") }
-//                        miBitmapSeleccionado?.let { bmp -> Image(bitmap = bmp.asImageBitmap(), contentDescription = "Preview", modifier = Modifier.size(120.dp).padding(bottom = 8.dp)) }
-//                    }
-//                }
-//            )
-//        }
+        // EDITAR UN PRODUCTO
         if (showEditDialog && selectedProduct != null) {
             var showTallaDialog by remember {
                 mutableStateOf(false)
@@ -843,38 +769,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                 material = editMaterial,
                                 onMaterialChange = { editMaterial = it }
                             )
-
-
-//                            TallaDropdown(
-//                                talla = editTalla,
-//                                onTallaChange = { editTalla = it }
-//                            )
-                            // TALLA EN EL FORMULARIO
-//                            OutlinedTextField(
-//                                value = editTalla,
-//                                onValueChange = {},
-//                                readOnly = true,
-//                                label = {
-//                                    Text("Talla")
-//                                },
-//                                trailingIcon = {
-//                                    Icon(
-//                                        Icons.Default.ArrowDropDown,
-//                                        contentDescription = null
-//                                    )
-//                                },
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable {
-//                                        Log.d("TALLA", "CLICK")
-//                                        showTallaDialog = true
-//                                    },
-//                                colors = OutlinedTextFieldDefaults.colors(
-//                                    focusedBorderColor = BrandBlack,
-//                                    unfocusedBorderColor = BrandWoodMedium
-//                                )
-//                            )
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

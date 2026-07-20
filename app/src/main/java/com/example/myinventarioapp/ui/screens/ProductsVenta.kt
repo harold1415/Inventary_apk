@@ -60,6 +60,11 @@ fun ProductsVenta(
     ventaViewModel: VentaViewModel,
     onSearch: () -> Unit
 ) {
+    // TODO: ViewModel — productoSeleccionado debería observarse como StateFlow
+    //PRODUCTO SELECCIONADO
+    val productoSeleccionado = ventaViewModel.oneproduct.value
+
+
     // Controla los íconos de la Status Bar
     AjustarBarraEstado(darkIcons = false)
 
@@ -73,8 +78,7 @@ fun ProductsVenta(
     var cantidaderror by remember { mutableStateOf(false) }
     var mostrarGanancia by remember { mutableStateOf(false) }
 
-    // TODO: ViewModel — productoSeleccionado debería observarse como StateFlow
-    val productoSeleccionado = ventaViewModel.oneproduct.value
+
     var selectedDiscount by remember { mutableStateOf<String?>(null) }
     var selectedGeneralDiscount by remember { mutableStateOf("") }
     var selectedUnitDiscount by remember { mutableStateOf("") }
@@ -351,8 +355,8 @@ fun ProductsVenta(
                     )
                 )
             }
-
-            // ── Card de total en negro ────────────────────────────────────
+            //-----------------------------------------
+            // ── Card de total en negro ──────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -465,7 +469,6 @@ fun ProductsVenta(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-
             Spacer(Modifier.height(8.dp))
         }
     }

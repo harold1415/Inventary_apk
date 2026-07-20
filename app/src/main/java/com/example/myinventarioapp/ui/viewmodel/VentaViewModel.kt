@@ -204,34 +204,6 @@ class VentaViewModel : ViewModel() {
             }
         }
     }
-
-    // ----------------------------------
-    // FUNCION CALCULAR TOTAL
-    // ----------------------------------
-//    fun calcularTotal(
-//        precio: Double,
-//        cantidad: Long,
-//        tipoDescuento: String?,
-//        descuentoUnit: Double,
-//        descuentoGeneral: Double
-//    ): Pair<Double, Double> {
-//        return when (tipoDescuento) {
-//            "unit" -> {
-//                val desc = cantidad * descuentoUnit
-//                val total = cantidad * (precio - descuentoUnit)
-//                Pair(desc, total)
-//            }
-//            "general" -> {
-//                val total = (cantidad * precio) - descuentoGeneral
-//                Pair(descuentoGeneral, total)
-//            }
-//            else -> {
-//                val total = cantidad * precio
-//                Pair(0.0, total)
-//            }
-//        }
-//    }
-
     // ----------------------------------
     // GUARDAR LA VENTA EN DETAILVENTA
     // ----------------------------------

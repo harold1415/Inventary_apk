@@ -121,6 +121,10 @@ fun DetailVenta(
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
 
+    var productoExpandido by remember {
+        mutableStateOf<String?>(null)
+    }
+
     // Observamos estados del ViewModel
     val insuficientes by ventaViewModel.insuficientes.collectAsState()
     val stockActual by ventaViewModel.stockActual.collectAsState()
@@ -377,19 +381,6 @@ fun DetailVenta(
                             color = BrandBlack
                         )
                         HorizontalDivider(Modifier.alpha(0.3f), color = BrandWoodLight)
-                        Spacer(Modifier.height(8.dp))
-                        // Encabezados de la tabla
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                        ) {
-                            Text("Producto", Modifier.width(120.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = BrandTextSecondary)
-                            Text("Can.", Modifier.width(50.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
-                            Text("Desc.", Modifier.width(60.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
-                            Text("S/.", Modifier.width(60.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
-                            Text("Total", Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
-                            Spacer(Modifier.width(60.dp))
-                        }
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
                         Spacer(Modifier.height(8.dp))
                     }
@@ -404,71 +395,96 @@ fun DetailVenta(
             val totalFinal = listaventa.sumOf { it.total }
 
             // Lista de productos con animación de entrada
-            itemsIndexed(listaventa, key = { _, prod -> prod.idDetalle }) { index, prod ->
-                var visible by remember { mutableStateOf(false) }
-                LaunchedEffect(Unit) {
-                    delay(index * 80L)
-                    visible = true
-                }
-
-                // Colores alternados de fila con la paleta de marca
-                val backgroundColor = if (index % 2 == 0)
-                    BrandWarmWhite
-                else
-                    BrandWoodLight.copy(alpha = 0.2f)
-
-                AnimatedVisibility(
-                    visible = visible,
-                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(initialOffsetY = { it / 3 }),
-                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 })
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem()
-                                .background(backgroundColor),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                prod.nombre,
-                                modifier = Modifier.width(120.dp),
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = BrandBlack.copy(alpha = 0.8f),
-                                    fontWeight = FontWeight.Normal
-                                ),
-                                fontSize = 14.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(prod.cantidad.toString(), modifier = Modifier.width(50.dp), fontSize = 14.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
-                            Text(prod.descuento.toString(), modifier = Modifier.width(60.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandTextSecondary)
-                            Text(prod.precio.toString(), modifier = Modifier.width(60.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandTextSecondary)
-                            Text(prod.total.toString(), modifier = Modifier.width(70.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandBlack, fontWeight = FontWeight.Medium)
-                            Row(
-                                modifier = Modifier.width(80.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                // Botón editar (deshabilitado por ahora — lógica comentada en original)
-                                IconButton(onClick = { }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = BrandWoodMedium, modifier = Modifier.size(20.dp))
-                                }
-                                // TODO: ViewModel — eliminarProducto() ya está en VentaViewModel, está bien
-                                IconButton(onClick = { ventaViewModel.eliminarProducto(prod.idDetalle) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = StockLowColor, modifier = Modifier.size(20.dp))
-                                }
-                            }
-                        }
+//            itemsIndexed(listaventa, key = { _, prod -> prod.idDetalle }) { index, prod ->
+//                var visible by remember { mutableStateOf(false) }
+//                LaunchedEffect(Unit) {
+//                    delay(index * 80L)
+//                    visible = true
+//                }
+//
+//                // Colores alternados de fila con la paleta de marca
+//                val backgroundColor = if (index % 2 == 0)
+//                    BrandWarmWhite
+//                else
+//                    BrandWoodLight.copy(alpha = 0.2f)
+//
+//                AnimatedVisibility(
+//                    visible = visible,
+//                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(initialOffsetY = { it / 3 }),
+//                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 3 })
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .horizontalScroll(rememberScrollState())
+//                    ) {
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .animateItem()
+//                                .background(backgroundColor),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            Text(
+//                                prod.nombre,
+//                                modifier = Modifier.width(120.dp),
+//                                style = MaterialTheme.typography.bodyMedium.copy(
+//                                    color = BrandBlack.copy(alpha = 0.8f),
+//                                    fontWeight = FontWeight.Normal
+//                                ),
+//                                fontSize = 14.sp,
+//                                maxLines = 1,
+//                                overflow = TextOverflow.Ellipsis
+//                            )
+//                            Text(prod.cantidad.toString(), modifier = Modifier.width(50.dp), fontSize = 14.sp, textAlign = TextAlign.Center, color = BrandTextSecondary)
+//                            Text(prod.descuento.toString(), modifier = Modifier.width(60.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandTextSecondary)
+//                            Text(prod.precio.toString(), modifier = Modifier.width(60.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandTextSecondary)
+//                            Text(prod.total.toString(), modifier = Modifier.width(70.dp), textAlign = TextAlign.Center, fontSize = 14.sp, color = BrandBlack, fontWeight = FontWeight.Medium)
+//                            Row(
+//                                modifier = Modifier.width(80.dp),
+//                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                            ) {
+//                                // Botón editar (deshabilitado por ahora — lógica comentada en original)
+//                                IconButton(onClick = { }) {
+//                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = BrandWoodMedium, modifier = Modifier.size(20.dp))
+//                                }
+//                                // TODO: ViewModel — eliminarProducto() ya está en VentaViewModel, está bien
+//                                IconButton(onClick = { ventaViewModel.eliminarProducto(prod.idDetalle) }) {
+//                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = StockLowColor, modifier = Modifier.size(20.dp))
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+            itemsIndexed(
+                listaventa,
+                key = { _, prod -> prod.idDetalle }
+            ) { index, prod ->
+                ProductoVentaItem(
+                    prod = prod,
+                    expandido = productoExpandido == prod.idDetalle,
+                    onClick = {
+                        productoExpandido =
+                            if(productoExpandido == prod.idDetalle)
+                                null
+                            else
+                                prod.idDetalle
+                    },
+                    onEditar = {
+                        selectedProduct = prod
+                        selectedIndex = index
+                        showEditDialog = true
+                    },
+                    onEliminar = {
+                        ventaViewModel.eliminarProducto(
+                            prod.idDetalle
+                        )
                     }
-                }
+                )
             }
-
-            // Totales de la venta
+            // Card - Total de la venta
             item {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
                 Surface(
@@ -641,6 +657,143 @@ fun FechaEditable(
             ).apply {
                 setOnDismissListener { showDialog = false }
             }.show()
+        }
+    }
+}
+
+@Composable
+fun ProductoVentaItem(
+    prod: com.example.myinventarioapp.ui.viewmodel.Producto,
+    expandido: Boolean,
+    onClick: () -> Unit,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = BrandWarmWhite
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            // PARTE SIEMPRE VISIBLE
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = prod.nombre,
+                        fontWeight = FontWeight.Bold,
+                        color = BrandBlack,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "Producto",
+                        fontSize = 12.sp,
+                        color = BrandTextSecondary
+                    )
+                }
+                if(!expandido){
+                Text(
+                    text = "S/. ${"%.2f".format(prod.total)}",
+                    fontWeight = FontWeight.Bold,
+                    color = BrandBlack
+                )}
+            }
+            Spacer(
+                Modifier.height(8.dp)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${prod.cantidad} unidades",
+                    color = BrandTextSecondary
+                )
+                Text(
+                    text = if(expandido) "▲" else "▼",
+                    color = BrandWoodMedium
+                )
+            }
+            // PARTE EXPANDIBLE
+            AnimatedVisibility(
+                visible = expandido
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 10.dp),
+                        color = BrandWoodLight
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Text(
+                            "Precio unitario",
+                            color = BrandTextSecondary
+                        )
+
+                        Text(
+                            "S/. ${prod.precio}"
+                        )
+
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Text(
+                            "Descuento",
+                            color = BrandTextSecondary
+                        )
+                        Text(
+                            "S/. ${prod.descuento}"
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ){
+                        IconButton(
+                            onClick = onEditar
+                        ){
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Editar",
+                                tint = BrandWoodMedium
+                            )
+                        }
+                        IconButton(
+                            onClick = onEliminar
+                        ){
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = StockLowColor
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
