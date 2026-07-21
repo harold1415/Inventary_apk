@@ -26,6 +26,7 @@ data class ProductoU(
     val nombre: String = "",
     val local:String ="",
     val talla: String = "",
+    val color:String ="",
     val stock: Long = 0,
     val precio: Double = 0.0,
     val codigo: String = "",
@@ -40,6 +41,7 @@ data class Producto(
     val nombre: String = "",
     val talla:String="",
     val local: String = "",
+    val color: String ="",
     val cantidad: Long = 0,
     val descuento: Double = 0.0,
     val costo: Double = 0.0,
@@ -101,13 +103,14 @@ class VentaViewModel : ViewModel() {
         nombre: String,
         local:String,
         talla: String,
+        color: String,
         stock: Long,
         precio: Double,
         codigo: String,
         precioXMayor: Double,
         costo: Double,
     ) {
-        _oneproduct.value = ProductoU(id, nombre,local, talla, stock, precio, codigo, precioXMayor, costo)
+        _oneproduct.value = ProductoU(id, nombre,local, talla, color, stock, precio, codigo, precioXMayor, costo)
         Log.d("VentaViewModel", "Producto seleccionado: $_oneproduct")
     }
 
@@ -116,10 +119,10 @@ class VentaViewModel : ViewModel() {
     }
     // FUNCION AGREGA LOS PRODUCTOS - DETAIL VENTA
     fun agregarProducto(
-
         codigo: String,
         nombre: String,
         talla: String,
+        color: String,
         local: String,
         cantidad: Long,
         descuento: Double,
@@ -131,7 +134,7 @@ class VentaViewModel : ViewModel() {
         if (ventaLocal.isEmpty()) {
             ventaLocal = local
         }
-        val nuevoProducto = Producto(codigo=codigo, nombre=nombre,talla=talla,local=local, cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
+        val nuevoProducto = Producto(codigo=codigo, nombre=nombre,talla=talla,color = color, local=local,cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
         productos.add(nuevoProducto)
         productosModificados = true
         Log.d("VentaViewModel", "Producto agregado: $productos")

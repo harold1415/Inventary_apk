@@ -40,7 +40,8 @@ fun MainScaffold(
         "detailventa",
         "scannerSearch",
         "SearchProducts",
-        "productsventa"
+        "productsventa",
+        "scanner"
     )
     val hideBottomBar = hideBottomBarRoutes.any { route ->
         currentRoute?.startsWith(route) == true
@@ -142,6 +143,16 @@ fun MainScaffold(
                         ventaViewModel = ventaViewModel,
                         ventaId = ventaId,
                         navController = innerNavController,
+                    )
+                }
+                composable("scanner") {
+                    ScannerScreen(
+                        onCodeScanned = { scannedCode ->
+                            innerNavController.navigate("inventario?codigoEscaneado=$scannedCode") {
+                                launchSingleTop = true
+                                popUpTo("inventario?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+                            }
+                        }
                     )
                 }
 

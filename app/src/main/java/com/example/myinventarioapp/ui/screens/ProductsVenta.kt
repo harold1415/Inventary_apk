@@ -168,6 +168,7 @@ fun ProductsVenta(
                             Text("Talla: ${productoSeleccionado.talla}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
                             Text("Stock: ${productoSeleccionado.stock}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
                             Text("Sucursal: ${productoSeleccionado.local}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
+                            Text("Color: ${productoSeleccionado.color}", style = MaterialTheme.typography.bodySmall, color = BrandTextSecondary)
                         }
                         Spacer(Modifier.height(8.dp))
                         HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
@@ -436,6 +437,7 @@ fun ProductsVenta(
                             productoSeleccionado.codigo,
                             productoSeleccionado.nombre,
                             productoSeleccionado.talla,
+                            productoSeleccionado.color,
                             productoSeleccionado.local,
                             cantidad,
                             descuento,

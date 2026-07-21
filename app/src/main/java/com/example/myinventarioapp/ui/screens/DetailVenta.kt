@@ -84,6 +84,8 @@ import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.mutableDoubleStateOf
 import java.util.Calendar
 import java.util.Date
@@ -95,6 +97,7 @@ import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.StockLowColor
+import org.apache.poi.xwpf.usermodel.VerticalAlign
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -458,6 +461,7 @@ fun DetailVenta(
 //                    }
 //                }
 //            }
+            // LISTAS DE PRODUCTOS EN CARDS
             itemsIndexed(
                 listaventa,
                 key = { _, prod -> prod.idDetalle }
@@ -495,9 +499,8 @@ fun DetailVenta(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalAlignment = Alignment.End
                     ) {
                         Text(
                             "Total descuento: S/. ${"%.2f".format(totalDescuento)}",
@@ -515,14 +518,44 @@ fun DetailVenta(
                             color = BrandBlack
                         )
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
-                        Text(
-                            "Ganancia: S/. ${"%.2f".format(totalGan)}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End,
+                        var mostrarGanancia by remember { mutableStateOf(false) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth(),
-                            color = BrandWoodMedium
-                        )
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            Text(
+                                text = "Ganancia:",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandWoodMedium
+                            )
+                            IconButton(
+                                onClick = {
+                                    mostrarGanancia = !mostrarGanancia
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (mostrarGanancia)
+                                        Icons.Default.Visibility
+                                    else
+                                        Icons.Default.VisibilityOff,
+                                    contentDescription = "Mostrar ganancia",
+                                    tint = BrandWoodMedium,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            Text(
+                                text = if (mostrarGanancia)
+                                    "S/ ${"%.2f".format(totalGan)}"
+                                else
+                                    "S/ ••••",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandWoodMedium
+                            )
+                        }
                     }
                 }
             }
@@ -705,11 +738,14 @@ fun ProductoVentaItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = "Producto",
-                        fontSize = 12.sp,
-                        color = BrandTextSecondary
-                    )
+                    Row() {
+                        Text(
+                            text = "Talla: ${prod.talla}",
+                            fontSize = 12.sp,
+                            color = BrandTextSecondary
+                        )
+
+                    }
                 }
                 if(!expandido){
                 Text(
