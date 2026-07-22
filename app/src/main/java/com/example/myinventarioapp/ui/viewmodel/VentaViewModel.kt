@@ -97,27 +97,16 @@ class VentaViewModel : ViewModel() {
     fun resetearCarga() {
         ventaYaCargada = false
     }
-
-    fun chooseProduct(
-        id: String,
-        nombre: String,
-        local:String,
-        talla: String,
-        color: String,
-        stock: Long,
-        precio: Double,
-        codigo: String,
-        precioXMayor: Double,
-        costo: Double,
-    ) {
-        _oneproduct.value = ProductoU(id, nombre,local, talla, color, stock, precio, codigo, precioXMayor, costo)
+    //FUNCION QUE GUARDA EL PRODUCTO QUE HEMOS SELECIONADO - SEARCHPRODUCTS.KT
+    fun chooseProduct(producto: ProductoU) {
+        _oneproduct.value = producto
         Log.d("VentaViewModel", "Producto seleccionado: $_oneproduct")
     }
-
+    // RESETEA EL VALOR DE _ONEPRODUCT QUE GUARDA EL VALOR DEL PRODUCTO ANTERIOR QUE GUARDAMOS - PRODUCTVENTA.KT
     fun resetProduct() {
         _oneproduct.value = null
     }
-    // FUNCION AGREGA LOS PRODUCTOS - DETAIL VENTA
+    // FUNCION AGREGA EL PRODUCTO SELECCIONADO A LA LISTA DE LA VENTA - PRODUCTSVENTA.KT
     fun agregarProducto(
         codigo: String,
         nombre: String,
@@ -140,13 +129,6 @@ class VentaViewModel : ViewModel() {
         Log.d("VentaViewModel", "Producto agregado: $productos")
     }
 
-    // FUNCION DE ELIMINAR UN PRODUCTO  - DETAILVENTA.KT
-//    fun eliminarProducto(index: Int) {
-//        if (index in productos.indices) {
-//            productos.removeAt(index)
-//            productosModificados = true
-//        }
-//    }
     // ELIMINA UN PRODUCTO EN LA LISTA DE DETAILVENTA
     fun eliminarProducto(idDetalle: String) {
         productos.removeAll {

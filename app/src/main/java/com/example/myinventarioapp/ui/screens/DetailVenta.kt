@@ -109,9 +109,6 @@ fun DetailVenta(
     ventaId: String = "New",
     navController: NavController
 ) {
-//    // Controla los íconos de la Status Bar — negro con íconos blancos
-//    AjustarBarraEstado(darkIcons = false)
-
     // Estados de UI del formulario — pueden quedarse en el Composable
     var incluirCliente by remember { mutableStateOf(false) }
     var nombreCliente by remember { mutableStateOf("") }
@@ -149,7 +146,11 @@ fun DetailVenta(
                     username = document.getString("nombre") ?: ""
                 }
                 .addOnFailureListener {
-                    Toast.makeText(context, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Error al obtener datos del usuario",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         }
     }
@@ -255,7 +256,11 @@ fun DetailVenta(
                             launchSingleTop = true
                         }
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = BrandWarmWhite)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = BrandWarmWhite
+                        )
                     }
                 }
             )
@@ -345,8 +350,14 @@ fun DetailVenta(
                         LaunchedEffect(ventaActual?.id) {
                             if (!fechaModificada.value) {
                                 val fecha = ventaActual?.fecha?.toDate()?.let {
-                                    SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(it)
-                                } ?: SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+                                    SimpleDateFormat(
+                                        "dd/MM/yyyy HH:mm",
+                                        Locale.getDefault()
+                                    ).format(it)
+                                } ?: SimpleDateFormat(
+                                    "dd/MM/yyyy HH:mm",
+                                    Locale.getDefault()
+                                ).format(Date())
                                 fechaVenta.value = fecha
                                 Log.d("fecha", ":$fecha")
                             }
@@ -384,7 +395,10 @@ fun DetailVenta(
                             color = BrandBlack
                         )
                         HorizontalDivider(Modifier.alpha(0.3f), color = BrandWoodLight)
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            color = BrandWoodLight
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
@@ -461,36 +475,56 @@ fun DetailVenta(
 //                    }
 //                }
 //            }
-            // LISTAS DE PRODUCTOS EN CARDS
-            itemsIndexed(
-                listaventa,
-                key = { _, prod -> prod.idDetalle }
-            ) { index, prod ->
-                ProductoVentaItem(
-                    prod = prod,
-                    expandido = productoExpandido == prod.idDetalle,
-                    onClick = {
-                        productoExpandido =
-                            if(productoExpandido == prod.idDetalle)
-                                null
-                            else
-                                prod.idDetalle
-                    },
-                    onEditar = {
-                        selectedProduct = prod
-                        selectedIndex = index
-                        showEditDialog = true
-                    },
-                    onEliminar = {
-                        ventaViewModel.eliminarProducto(
-                            prod.idDetalle
+            if (listaventa.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No hay productos",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray
                         )
                     }
-                )
+                }
+            } else {
+                // LISTAS DE PRODUCTOS EN CARDS
+                itemsIndexed(
+                    listaventa,
+                    key = { _, prod -> prod.idDetalle }
+                ) { index, prod ->
+                    ProductoVentaItem(
+                        prod = prod,
+                        expandido = productoExpandido == prod.idDetalle,
+                        onClick = {
+                            productoExpandido =
+                                if (productoExpandido == prod.idDetalle)
+                                    null
+                                else
+                                    prod.idDetalle
+                        },
+                        onEditar = {
+                            selectedProduct = prod
+                            selectedIndex = index
+                            showEditDialog = true
+                        },
+                        onEliminar = {
+                            ventaViewModel.eliminarProducto(
+                                prod.idDetalle
+                            )
+                        }
+                    )
+                }
             }
             // Card - Total de la venta
             item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = BrandWoodLight
+                )
                 Surface(
                     color = BrandWarmWhite,
                     shape = RoundedCornerShape(12.dp),
@@ -499,7 +533,7 @@ fun DetailVenta(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
@@ -517,7 +551,10 @@ fun DetailVenta(
                             modifier = Modifier.fillMaxWidth(),
                             color = BrandBlack
                         )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            color = BrandWoodLight
+                        )
                         var mostrarGanancia by remember { mutableStateOf(false) }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -567,21 +604,33 @@ fun DetailVenta(
             var editCant by rememberSaveable(selectedProduct) { mutableStateOf(selectedProduct!!.cantidad.toString()) }
             AlertDialog(
                 onDismissRequest = { showEditDialog = false },
-                title = { Text("Editar Producto", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
+                title = {
+                    Text(
+                        "Editar Producto",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                },
                 text = {
                     Column {
                         OutlinedTextField(
                             value = editNombre,
                             onValueChange = { editNombre = it },
                             label = { Text("Nombre") },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium)
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandBlack,
+                                unfocusedBorderColor = BrandWoodMedium
+                            )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = editCant,
                             onValueChange = { editCant = it },
                             label = { Text("Cantidad") },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium)
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandBlack,
+                                unfocusedBorderColor = BrandWoodMedium
+                            )
                         )
                     }
                 },
@@ -589,16 +638,26 @@ fun DetailVenta(
                     Button(
                         onClick = {
                             val nuevaCantidad = editCant.toLongOrNull() ?: 0
-                            ventaViewModel.updateProducto(index = selectedIndex!!, nombre = editNombre, cantidad = nuevaCantidad)
+                            ventaViewModel.updateProducto(
+                                index = selectedIndex!!,
+                                nombre = editNombre,
+                                cantidad = nuevaCantidad
+                            )
                             showEditDialog = false
                         },
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = BrandBlack,
+                            contentColor = BrandWarmWhite
+                        )
                     ) { Text("Guardar") }
                 },
                 dismissButton = {
                     Button(
                         onClick = { showEditDialog = false },
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = BrandWoodMedium,
+                            contentColor = BrandBlack
+                        )
                     ) { Text("Cancelar") }
                 }
             )
@@ -679,7 +738,8 @@ fun FechaEditable(
                     TimePickerDialog(
                         context,
                         { _, hour, minute ->
-                            val nuevaFechaHora = String.format("%02d/%02d/%04d %02d:%02d", d, m + 1, y, hour, minute)
+                            val nuevaFechaHora =
+                                String.format("%02d/%02d/%04d %02d:%02d", d, m + 1, y, hour, minute)
                             fechaSeleccionada.value = nuevaFechaHora
                             onFechaCambiada(nuevaFechaHora)
                         },
@@ -747,12 +807,13 @@ fun ProductoVentaItem(
 
                     }
                 }
-                if(!expandido){
-                Text(
-                    text = "S/. ${"%.2f".format(prod.total)}",
-                    fontWeight = FontWeight.Bold,
-                    color = BrandBlack
-                )}
+                if (!expandido) {
+                    Text(
+                        text = "S/. ${"%.2f".format(prod.total)}",
+                        fontWeight = FontWeight.Bold,
+                        color = BrandBlack
+                    )
+                }
             }
             Spacer(
                 Modifier.height(8.dp)
@@ -766,7 +827,7 @@ fun ProductoVentaItem(
                     color = BrandTextSecondary
                 )
                 Text(
-                    text = if(expandido) "▲" else "▼",
+                    text = if (expandido) "▲" else "▼",
                     color = BrandWoodMedium
                 )
             }
@@ -782,7 +843,7 @@ fun ProductoVentaItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
-                    ){
+                    ) {
                         Text(
                             "Precio unitario",
                             color = BrandTextSecondary
@@ -796,7 +857,7 @@ fun ProductoVentaItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
-                    ){
+                    ) {
                         Text(
                             "Descuento",
                             color = BrandTextSecondary
@@ -808,10 +869,10 @@ fun ProductoVentaItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
-                    ){
+                    ) {
                         IconButton(
                             onClick = onEditar
-                        ){
+                        ) {
                             Icon(
                                 Icons.Default.Edit,
                                 contentDescription = "Editar",
@@ -820,7 +881,7 @@ fun ProductoVentaItem(
                         }
                         IconButton(
                             onClick = onEliminar
-                        ){
+                        ) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Eliminar",

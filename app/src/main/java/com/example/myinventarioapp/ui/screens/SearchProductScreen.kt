@@ -67,20 +67,8 @@ import com.example.myinventarioapp.ui.theme.StockLowColor
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: ViewModel — data class Products debería vivir en un SearchProductViewModel
-// junto con la lógica de búsqueda y el listado de productos
-data class Products(
-    val id: String = "",
-    val nombre: String = "",
-    val talla: String = "",
-    val stock: Long = 0,
-    val precio: Double = 0.0,
-    val color: String ="",
-    val codigo: String = "",
-    val precioXMayor: Double = 0.0,
-    val costo: Double = 0.0,
-    val local: String = ""
-)
+//IMPORTAMOS LAS CLASE ProductsU
+import com.example.myinventarioapp.ui.viewmodel.ProductoU
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -99,8 +87,8 @@ fun SearchProductScreen(
     val db = FirebaseFirestore.getInstance()
 
     // TODO: ViewModel — listProduct debería ser un StateFlow en SearchProductViewModel
-    var listProduct by remember { mutableStateOf(listOf<Products>()) }
-    var selectedProduct by remember { mutableStateOf<Products?>(null) }
+    var listProduct by remember { mutableStateOf(listOf<ProductoU>()) }
+    var selectedProduct by remember { mutableStateOf<ProductoU?>(null) }
 
     // Indicador de carga mientras Firestore responde
     var isLoading by remember { mutableStateOf(true) }
@@ -110,7 +98,7 @@ fun SearchProductScreen(
         db.collection("productos").addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 listProduct = it.documents.mapNotNull { doc ->
-                    doc.toObject(Products::class.java)?.copy(id = doc.id)
+                    doc.toObject(ProductoU::class.java)?.copy(id = doc.id)
                 }
                 isLoading = false // 👈 ya llegaron los datos
             }
@@ -152,18 +140,7 @@ fun SearchProductScreen(
                         onClick = {
                             selectedProduct?.let { producto ->
                                 // TODO: ViewModel — chooseProduct() ya está en VentaViewModel, está bien
-                                ventaViewModel.chooseProduct(
-                                    producto.id,
-                                    producto.nombre,
-                                    producto.local,
-                                    producto.talla,
-                                    producto.color,
-                                    producto.stock,
-                                    producto.precio,
-                                    producto.codigo,
-                                    producto.precioXMayor,
-                                    producto.costo,
-                                )
+                                ventaViewModel.chooseProduct(producto)
                                 Log.d("productoSelect", "igual:$producto")
                                 onToProductsVenta()
                             }
