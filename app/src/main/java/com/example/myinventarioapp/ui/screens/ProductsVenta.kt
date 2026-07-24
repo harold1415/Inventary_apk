@@ -3,7 +3,9 @@ package com.example.myinventarioapp.ui.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -247,18 +249,21 @@ fun ProductsVenta(
                         )
                     }
                     Column(
-                        horizontalAlignment = Alignment.End
+                        modifier = Modifier.padding(end = 6.dp)
                     ){
-                        IconButton(
-                            onClick = {
-                                mostrarDialog = true},
+                        Box(
                             modifier = Modifier
+                                .size(28.dp)
                                 .border(
                                     width = 1.dp,
                                     color = BrandWoodMedium,
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(8.dp)
                                 )
-                        ) {
+                                .clickable {
+                                    mostrarDialog = true
+                                },
+                            contentAlignment = Alignment.Center
+                        ){
                             Icon(Icons.Default.Edit,
                             contentDescription = "Editar precio",
                             tint = BrandWoodMedium,
@@ -271,11 +276,6 @@ fun ProductsVenta(
 
 
             // ── Cantidad con botones +/- ──────────────────────────────────
-            Text(
-                "Cantidad",
-                style = MaterialTheme.typography.labelMedium,
-                color = BrandTextSecondary
-            )
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -291,64 +291,95 @@ fun ProductsVenta(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 40.dp, vertical = 4.dp),
+                        .padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Botón restar
-                    val enabled = (cantPro.toLongOrNull() ?: 1L) > 1
-                    IconButton(
-                        enabled = enabled,
-                        onClick = {
-                            val actual = cantPro.toLongOrNull() ?: 0L
-                            if (actual > 1) {
-                                cantPro = (actual - 1).toString()
-                                cantidaderror = false
+                    Column(modifier = Modifier.weight(1f)){
+                        Text(
+                            "Cantidad",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = BrandTextSecondary
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+
+                        ) {
+                            // Botón restar
+                            val enabled = (cantPro.toLongOrNull() ?: 1L) > 1
+                            IconButton(
+                                enabled = enabled,
+                                onClick = {
+                                    val actual = cantPro.toLongOrNull() ?: 0L
+                                    if (actual > 1) {
+                                        cantPro = (actual - 1).toString()
+                                        cantidaderror = false
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Remove, contentDescription = "Restar",
+                                    tint = if (enabled) BrandBlack else Color.Gray
+                                )
+                            }
+
+                            // Campo de cantidad — puedes también escribir directamente
+                            OutlinedTextField(
+                                value = cantPro,
+                                onValueChange = {
+                                    cantPro = it
+                                    cantidaderror =
+                                        it.isEmpty() || it.toLongOrNull() == null || (it.toLongOrNull()
+                                            ?: 0L) < 1
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Next
+                                ),
+                                modifier = Modifier.width(80.dp),
+                                singleLine = true,
+                                isError = cantidaderror,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                ),
+                                textStyle = TextStyle(
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+
+                            // Botón sumar
+                            IconButton(
+                                onClick = {
+                                    val actual = cantPro.toLongOrNull() ?: 0L
+                                    cantPro = (actual + 1).toString()
+                                    cantidaderror = false
+                                }
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Sumar", tint = BrandBlack)
                             }
                         }
-                    ) {
-                        Icon(
-                            Icons.Default.Remove, contentDescription = "Restar",
-                            tint = if (enabled) BrandBlack else Color.Gray
-                        )
+
                     }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.End
+                    ){
+                        Text(
+                            "SubTotal",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = BrandTextSecondary
 
-                    // Campo de cantidad — puedes también escribir directamente
-                    OutlinedTextField(
-                        value = cantPro,
-                        onValueChange = {
-                            cantPro = it
-                            cantidaderror =
-                                it.isEmpty() || it.toLongOrNull() == null || (it.toLongOrNull()
-                                    ?: 0L) < 1
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
-                        ),
-                        modifier = Modifier.width(80.dp),
-                        singleLine = true,
-                        isError = cantidaderror,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BrandBlack,
-                            unfocusedBorderColor = BrandWoodMedium
-                        ),
-                        textStyle = TextStyle(
-                            textAlign = TextAlign.Center,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
                         )
-                    )
-
-                    // Botón sumar
-                    IconButton(
-                        onClick = {
-                            val actual = cantPro.toLongOrNull() ?: 0L
-                            cantPro = (actual + 1).toString()
-                            cantidaderror = false
-                        }
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Sumar", tint = BrandBlack)
+                        val subtotal= precioProduct*cantidadNum
+                        Text(
+                            "S/ ${"%.2f".format(subtotal)}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandBlack
+                        )
                     }
                 }
             }
