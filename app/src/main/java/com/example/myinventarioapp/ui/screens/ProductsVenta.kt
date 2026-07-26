@@ -33,7 +33,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -161,44 +160,99 @@ fun ProductsVenta(
                     colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = nombreProduct,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandBlack,
-                            maxLines = 2
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    )
+                    {
+                        Column(modifier=Modifier.weight(0.7f)) {}
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp).weight(1f)
+                        ) {
                             Text(
-                                "Talla: ${productoSeleccionado.talla}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BrandTextSecondary
+                                text = nombreProduct,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack,
+                                maxLines = 2
                             )
+                            Spacer(Modifier.height(6.dp))
                             Text(
-                                "Stock: ${productoSeleccionado.stock}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BrandTextSecondary
+                                text = productoSeleccionado.codigo,
+                                fontSize = 14.sp,
+//                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack
                             )
-                            Text(
-                                "Sucursal: ${productoSeleccionado.local}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BrandTextSecondary
-                            )
-                            Text(
-                                "Color: ${productoSeleccionado.color}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BrandTextSecondary
-                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ){
+                                    Text(
+                                        text = "Talla",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(
+                                        productoSeleccionado.talla,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = BrandBlack
+                                    )
+                                }
+                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ){
+                                    Text(
+                                        text = "Color",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(
+                                        productoSeleccionado.color,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = BrandBlack
+                                    )
+                                }
+                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ){
+                                    Text(
+                                        text = "Sucursal",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(
+                                        productoSeleccionado.local,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = BrandBlack
+                                    )
+                                }
+
+//                                Text(
+//                                    "Stock: ${productoSeleccionado.stock}",
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = BrandTextSecondary
+//                                )
+//                                Text(
+//                                    "Sucursal: ${productoSeleccionado.local}",
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = BrandTextSecondary
+//                                )
+//                                Text(
+//                                    "Color: ${productoSeleccionado.color}",
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = BrandTextSecondary
+//                                )
+                            }
+//                            Spacer(Modifier.height(8.dp))
+////                            HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
+//                            Spacer(Modifier.height(8.dp))
                         }
-                        Spacer(Modifier.height(8.dp))
-                        HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
-                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
@@ -304,9 +358,9 @@ fun ProductsVenta(
                                         color = BrandWoodMedium,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable (
+                                    .clickable(
                                         enabled = enabled,
-                                        onClick= {
+                                        onClick = {
                                             val actual = cantPro.toLongOrNull() ?: 0L
                                             if (actual > 1) {
                                                 cantPro = (actual - 1).toString()
@@ -338,7 +392,7 @@ fun ProductsVenta(
                                         color = BrandWoodMedium,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable{
+                                    .clickable {
                                         val actual = cantPro.toLongOrNull() ?: 0L
                                         cantPro = (actual + 1).toString()
                                         cantidaderror = false
@@ -357,7 +411,9 @@ fun ProductsVenta(
                     VerticalDivider(modifier = Modifier.height(60.dp),color = BrandWoodLight.copy(alpha = 0.6f))
                     Spacer(Modifier.width(8.dp))
                     Column(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
                     ) {
                         Text(
                             "SubTotal",
