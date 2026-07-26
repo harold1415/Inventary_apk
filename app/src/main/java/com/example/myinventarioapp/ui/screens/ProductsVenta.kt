@@ -84,7 +84,7 @@ fun ProductsVenta(
     var selectedDiscount by remember { mutableStateOf<String?>(null) }
     var selectedGeneralDiscount by remember { mutableStateOf("") }
     var selectedUnitDiscount by remember { mutableStateOf("") }
-    var mostrarDialog by remember {mutableStateOf(false)}
+    var mostrarDialog by remember { mutableStateOf(false) }
     var changePrice by remember { mutableStateOf("") }
 
     // Rellena nombre y precio cuando se selecciona un producto
@@ -199,21 +199,6 @@ fun ProductsVenta(
                         Spacer(Modifier.height(8.dp))
                         HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
                         Spacer(Modifier.height(8.dp))
-//                        // Precio editable por si quieren cambiarlo
-//                        OutlinedTextField(
-//                            value = precioProduct,
-//                            onValueChange = { precioProduct = it },
-//                            label = { Text("Precio unitario (S/)") },
-//                            keyboardOptions = KeyboardOptions(
-//                                keyboardType = KeyboardType.Number,
-//                                imeAction = ImeAction.Next
-//                            ),
-//                            modifier = Modifier.fillMaxWidth(),
-//                            colors = OutlinedTextFieldDefaults.colors(
-//                                focusedBorderColor = BrandBlack,
-//                                unfocusedBorderColor = BrandWoodMedium
-//                            )
-//                        )
                     }
                 }
             }
@@ -232,7 +217,7 @@ fun ProductsVenta(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column{
+                    Column {
                         Text(
                             "Precio de venta ",
                             style = MaterialTheme.typography.labelMedium,
@@ -250,10 +235,10 @@ fun ProductsVenta(
                     }
                     Column(
                         modifier = Modifier.padding(end = 6.dp)
-                    ){
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(28.dp)
+                                .size(32.dp)
                                 .border(
                                     width = 1.dp,
                                     color = BrandWoodMedium,
@@ -263,11 +248,13 @@ fun ProductsVenta(
                                     mostrarDialog = true
                                 },
                             contentAlignment = Alignment.Center
-                        ){
-                            Icon(Icons.Default.Edit,
-                            contentDescription = "Editar precio",
-                            tint = BrandWoodMedium,
-                            modifier = Modifier.size(20.dp))
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Editar precio",
+                                tint = BrandWoodMedium,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
@@ -291,89 +278,95 @@ fun ProductsVenta(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(modifier = Modifier.weight(1f)){
+                    Column(modifier = Modifier.weight(2f)) {
                         Text(
                             "Cantidad",
                             style = MaterialTheme.typography.labelMedium,
                             color = BrandTextSecondary
                         )
+                        Spacer(Modifier.height(8.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-
+                            horizontalArrangement = Arrangement.spacedBy(18.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Botón restar
                             val enabled = (cantPro.toLongOrNull() ?: 1L) > 1
-                            IconButton(
-                                enabled = enabled,
-                                onClick = {
-                                    val actual = cantPro.toLongOrNull() ?: 0L
-                                    if (actual > 1) {
-                                        cantPro = (actual - 1).toString()
-                                        cantidaderror = false
-                                    }
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(50.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = BrandWoodMedium,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable (
+                                        enabled = enabled,
+                                        onClick= {
+                                            val actual = cantPro.toLongOrNull() ?: 0L
+                                            if (actual > 1) {
+                                                cantPro = (actual - 1).toString()
+                                                cantidaderror = false
+                                            }
+                                        }
+                                    ),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Remove, contentDescription = "Restar",
                                     tint = if (enabled) BrandBlack else Color.Gray
                                 )
                             }
-
-                            // Campo de cantidad — puedes también escribir directamente
-                            OutlinedTextField(
-                                value = cantPro,
-                                onValueChange = {
-                                    cantPro = it
-                                    cantidaderror =
-                                        it.isEmpty() || it.toLongOrNull() == null || (it.toLongOrNull()
-                                            ?: 0L) < 1
-                                },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Number,
-                                    imeAction = ImeAction.Next
-                                ),
-                                modifier = Modifier.width(80.dp),
-                                singleLine = true,
-                                isError = cantidaderror,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = BrandBlack,
-                                    unfocusedBorderColor = BrandWoodMedium
-                                ),
-                                textStyle = TextStyle(
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            Text(
+                                text = cantPro,
+                                modifier = Modifier.width(50.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
                             )
-
                             // Botón sumar
-                            IconButton(
-                                onClick = {
-                                    val actual = cantPro.toLongOrNull() ?: 0L
-                                    cantPro = (actual + 1).toString()
-                                    cantidaderror = false
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(50.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = BrandWoodMedium,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable{
+                                        val actual = cantPro.toLongOrNull() ?: 0L
+                                        cantPro = (actual + 1).toString()
+                                        cantidaderror = false
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Sumar", tint = BrandBlack)
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = "Sumar",
+                                    tint = BrandBlack
+                                )
                             }
                         }
-
                     }
+                    Spacer(Modifier.width(8.dp))
+                    VerticalDivider(modifier = Modifier.height(60.dp),color = BrandWoodLight.copy(alpha = 0.6f))
+                    Spacer(Modifier.width(8.dp))
                     Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.End
-                    ){
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
                             "SubTotal",
                             style = MaterialTheme.typography.labelMedium,
                             color = BrandTextSecondary
 
                         )
-                        val subtotal= precioProduct*cantidadNum
+                        Spacer(Modifier.height(8.dp))
+                        val subtotal = precioProduct * cantidadNum
                         Text(
                             "S/ ${"%.2f".format(subtotal)}",
                             fontSize = 16.sp,
@@ -382,20 +375,6 @@ fun ProductsVenta(
                         )
                     }
                 }
-            }
-            //MENSAJES QUE SALEN EN EL CONTENEDOR DE LA CANTIDAD
-            val cantprenda = cantPro.toLongOrNull()
-            if (cantidaderror) {
-                Text(
-                    text = when {
-                        cantPro.isEmpty() -> "El campo no puede estar vacio"
-                        cantprenda == null -> "Debe de ingresar un número valido"
-                        cantprenda < 1 -> "Debe de tener como minimo una unidad"
-                        else -> ""
-                    },
-                    color = StockLowColor,
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
 
             // ── Tipo de descuento como chips ──────────────────────────────
@@ -603,13 +582,17 @@ fun ProductsVenta(
                 Text("Editar Precio")
             },
             text = {
-                Column(modifier = Modifier.fillMaxWidth()){
+                Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = changePrice,
                         onValueChange = { changePrice = it },
                         label = { Text("Nuevo precio") },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandBlack,
+                            unfocusedBorderColor = BrandWoodMedium
+                        )
+                    )
                     Spacer(Modifier.height(8.dp))
                 }
 
