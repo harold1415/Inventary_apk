@@ -53,7 +53,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 
-
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,17 +159,19 @@ fun ProductsVenta(
                     colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     )
                     {
-                        Column(modifier=Modifier.weight(0.7f)) {}
+                        Column(modifier = Modifier.weight(0.7f)) {}
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(4.dp).weight(1f)
+                                .padding(4.dp)
+                                .weight(1f)
                         ) {
                             Text(
                                 text = nombreProduct,
@@ -180,17 +181,27 @@ fun ProductsVenta(
                                 maxLines = 2
                             )
                             Spacer(Modifier.height(6.dp))
-                            Text(
-                                text = productoSeleccionado.codigo,
-                                fontSize = 14.sp,
-//                                fontWeight = FontWeight.Bold,
-                                color = BrandBlack
-                            )
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ){
+                            Surface(
+                                color = BrandWoodLight.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(20.dp)
+                            ) {
+                                Text(
+                                    text = "Código: ${productoSeleccionado.codigo}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = BrandTextSecondary,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                        .weight(0.5f),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
                                     Text(
                                         text = "Talla",
                                         fontSize = 10.sp,
@@ -198,14 +209,20 @@ fun ProductsVenta(
                                     )
                                     Text(
                                         productoSeleccionado.talla,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = BrandBlack
                                     )
                                 }
-                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                        .weight(0.8f),
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
-                                ){
+                                ) {
                                     Text(
                                         text = "Color",
                                         fontSize = 10.sp,
@@ -213,14 +230,20 @@ fun ProductsVenta(
                                     )
                                     Text(
                                         productoSeleccionado.color,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = BrandBlack
                                     )
                                 }
-                                Column(modifier = Modifier.fillMaxWidth().padding(4.dp).weight(1f),
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                        .weight(1f),
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
-                                ){
+                                ) {
                                     Text(
                                         text = "Sucursal",
                                         fontSize = 10.sp,
@@ -228,513 +251,518 @@ fun ProductsVenta(
                                     )
                                     Text(
                                         productoSeleccionado.local,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = BrandBlack
                                     )
                                 }
-
-//                                Text(
-//                                    "Stock: ${productoSeleccionado.stock}",
-//                                    style = MaterialTheme.typography.bodySmall,
-//                                    color = BrandTextSecondary
-//                                )
-//                                Text(
-//                                    "Sucursal: ${productoSeleccionado.local}",
-//                                    style = MaterialTheme.typography.bodySmall,
-//                                    color = BrandTextSecondary
-//                                )
-//                                Text(
-//                                    "Color: ${productoSeleccionado.color}",
-//                                    style = MaterialTheme.typography.bodySmall,
-//                                    color = BrandTextSecondary
-//                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Surface(
+                                        color = BrandWoodLight.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(20.dp)
+                                    ) {
+                                        Text(
+                                            text = "Stock: ${productoSeleccionado.stock}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.Green,
+                                        )
+                                    }
+                                }
                             }
-//                            Spacer(Modifier.height(8.dp))
-////                            HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
-//                            Spacer(Modifier.height(8.dp))
                         }
                     }
                 }
-            }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
-                elevation = CardDefaults.cardElevation(2.dp)
-            ) {
-                Row(
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
+                    elevation = CardDefaults.cardElevation(2.dp)
                 ) {
-                    Column {
-                        Text(
-                            "Precio de venta ",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = BrandTextSecondary
-                        )
-                        Spacer(
-                            Modifier.height(4.dp)
-                        )
-                        Text(
-                            "S/ ${"%.2f".format(precioProduct)}",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandBlack
-                        )
-                    }
-                    Column(
-                        modifier = Modifier.padding(end = 6.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = BrandWoodMedium,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable {
-                                    mostrarDialog = true
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = "Editar precio",
-                                tint = BrandWoodMedium,
-                                modifier = Modifier.size(20.dp)
+                        Column {
+                            Text(
+                                "Precio de venta ",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = BrandTextSecondary
+                            )
+                            Spacer(
+                                Modifier.height(4.dp)
+                            )
+                            Text(
+                                "S/ ${"%.2f".format(precioProduct)}",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack
                             )
                         }
-                    }
-                }
-
-            }
-
-
-            // ── Cantidad con botones +/- ──────────────────────────────────
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        if (cantidaderror) StockLowColor else BrandWoodLight,
-                        RoundedCornerShape(16.dp)
-                    ),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
-                elevation = CardDefaults.cardElevation(2.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(2f)) {
-                        Text(
-                            "Cantidad",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = BrandTextSecondary
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(18.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.padding(end = 6.dp)
                         ) {
-                            // Botón restar
-                            val enabled = (cantPro.toLongOrNull() ?: 1L) > 1
                             Box(
                                 modifier = Modifier
-                                    .height(40.dp)
-                                    .width(50.dp)
-                                    .border(
-                                        width = 1.dp,
-                                        color = BrandWoodMedium,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable(
-                                        enabled = enabled,
-                                        onClick = {
-                                            val actual = cantPro.toLongOrNull() ?: 0L
-                                            if (actual > 1) {
-                                                cantPro = (actual - 1).toString()
-                                                cantidaderror = false
-                                            }
-                                        }
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Remove, contentDescription = "Restar",
-                                    tint = if (enabled) BrandBlack else Color.Gray
-                                )
-                            }
-                            Text(
-                                text = cantPro,
-                                modifier = Modifier.width(50.dp),
-                                textAlign = TextAlign.Center,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            // Botón sumar
-                            Box(
-                                modifier = Modifier
-                                    .height(40.dp)
-                                    .width(50.dp)
+                                    .size(32.dp)
                                     .border(
                                         width = 1.dp,
                                         color = BrandWoodMedium,
                                         shape = RoundedCornerShape(8.dp)
                                     )
                                     .clickable {
-                                        val actual = cantPro.toLongOrNull() ?: 0L
-                                        cantPro = (actual + 1).toString()
-                                        cantidaderror = false
+                                        mostrarDialog = true
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.Add,
-                                    contentDescription = "Sumar",
-                                    tint = BrandBlack
-                                )
-                            }
-                        }
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    VerticalDivider(modifier = Modifier.height(60.dp),color = BrandWoodLight.copy(alpha = 0.6f))
-                    Spacer(Modifier.width(8.dp))
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp)
-                    ) {
-                        Text(
-                            "SubTotal",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = BrandTextSecondary
-
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        val subtotal = precioProduct * cantidadNum
-                        Text(
-                            "S/ ${"%.2f".format(subtotal)}",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandBlack
-                        )
-                    }
-                }
-            }
-
-            // ── Tipo de descuento como chips ──────────────────────────────
-            Text(
-                "Tipo de descuento",
-                style = MaterialTheme.typography.labelMedium,
-                color = BrandTextSecondary
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Chip: Sin descuento
-                DiscountChip(
-                    label = "Sin descuento",
-                    selected = selectedDiscount == null,
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        selectedDiscount = null
-                        selectedUnitDiscount = ""
-                        selectedGeneralDiscount = ""
-                    }
-                )
-                // Chip: Por prenda (unitario)
-                DiscountChip(
-                    label = "Por prenda",
-                    selected = selectedDiscount == "unit",
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        selectedDiscount = "unit"
-                        selectedGeneralDiscount = ""
-                    }
-                )
-                // Chip: General (sobre el total)
-                DiscountChip(
-                    label = "General",
-                    selected = selectedDiscount == "general",
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        selectedDiscount = "general"
-                        selectedUnitDiscount = ""
-                    }
-                )
-            }
-
-            // ── Campo de descuento — aparece según el tipo elegido ────────
-            if (selectedDiscount == "unit") {
-                OutlinedTextField(
-                    value = selectedUnitDiscount,
-                    onValueChange = { selectedUnitDiscount = it },
-                    label = { Text("Descuento por prenda (S/)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BrandBlack,
-                        unfocusedBorderColor = BrandWoodMedium
-                    )
-                )
-            }
-            if (selectedDiscount == "general") {
-                OutlinedTextField(
-                    value = selectedGeneralDiscount,
-                    onValueChange = { selectedGeneralDiscount = it },
-                    label = { Text("Descuento general (S/)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BrandBlack,
-                        unfocusedBorderColor = BrandWoodMedium
-                    )
-                )
-            }
-            //-----------------------------------------
-            // ── Card de total en negro ──────────────
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = BrandBlack),
-                elevation = CardDefaults.cardElevation(2.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            "Total",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = BrandWoodMedium
-                        )
-                        Spacer(
-                            Modifier.height(4.dp)
-                        )
-                        Text(
-                            "S/ ${"%.2f".format(total)}",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandWarmWhite
-                        )
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Ganancia",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = BrandWoodMedium
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    mostrarGanancia = !mostrarGanancia
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (mostrarGanancia)
-                                        Icons.Default.Visibility
-                                    else
-                                        Icons.Default.VisibilityOff,
-                                    contentDescription = "Mostrar ganancia",
+                                    Icons.Default.Edit,
+                                    contentDescription = "Editar precio",
                                     tint = BrandWoodMedium,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
+                    }
 
-                        Text(
-                            text = if (mostrarGanancia)
-                                "S/ ${"%.2f".format(ganancia)}"
-                            else
-                                "S/ ••••",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = BrandWoodMedium
+                }
+
+
+                // ── Cantidad con botones +/- ──────────────────────────────────
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            1.dp,
+                            if (cantidaderror) StockLowColor else BrandWoodLight,
+                            RoundedCornerShape(16.dp)
+                        ),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(2f)) {
+                            Text(
+                                "Cantidad",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = BrandTextSecondary
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Botón restar
+                                val enabled = (cantPro.toLongOrNull() ?: 1L) > 1
+                                Box(
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(50.dp)
+                                        .border(
+                                            width = 1.dp,
+                                            color = BrandWoodMedium,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable(
+                                            enabled = enabled,
+                                            onClick = {
+                                                val actual = cantPro.toLongOrNull() ?: 0L
+                                                if (actual > 1) {
+                                                    cantPro = (actual - 1).toString()
+                                                    cantidaderror = false
+                                                }
+                                            }
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Remove, contentDescription = "Restar",
+                                        tint = if (enabled) BrandBlack else Color.Gray
+                                    )
+                                }
+                                Text(
+                                    text = cantPro,
+                                    modifier = Modifier.width(50.dp),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                // Botón sumar
+                                Box(
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(50.dp)
+                                        .border(
+                                            width = 1.dp,
+                                            color = BrandWoodMedium,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable {
+                                            val actual = cantPro.toLongOrNull() ?: 0L
+                                            cantPro = (actual + 1).toString()
+                                            cantidaderror = false
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = "Sumar",
+                                        tint = BrandBlack
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        VerticalDivider(
+                            modifier = Modifier.height(60.dp),
+                            color = BrandWoodLight.copy(alpha = 0.6f)
                         )
+                        Spacer(Modifier.width(8.dp))
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp)
+                        ) {
+                            Text(
+                                "SubTotal",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = BrandTextSecondary
+
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            val subtotal = precioProduct * cantidadNum
+                            Text(
+                                "S/ ${"%.2f".format(subtotal)}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack
+                            )
+                        }
                     }
                 }
-            }
 
-            // ── Botón agregar a la venta ──────────────────────────────────
-            // TODO: ViewModel — agregarProducto() ya está en VentaViewModel, está bien
-            Button(
-                onClick = {
-                    val cantidad = cantPro.toLong()
-                    if (productoSeleccionado != null && nombreProduct.isNotBlank() && cantPro.isNotBlank()) {
-                        ventaViewModel.agregarProducto(
-                            productoSeleccionado.codigo,
-                            productoSeleccionado.nombre,
-                            productoSeleccionado.talla,
-                            productoSeleccionado.color,
-                            productoSeleccionado.local,
-                            cantidad,
-                            descuento,
-                            productoSeleccionado.costo,
-                            productoSeleccionado.precio,
-                            ganancia,
-                            total
-                        )
-                        ventaViewModel.resetProduct()
-                        val id = ventaViewModel.ventaActualId ?: "New"
-                        onToDetailVenta(id)
-                    }
-                },
-                enabled = productoSeleccionado != null &&
-                        nombreProduct.isNotBlank() &&
-                        cantPro.isNotBlank() &&
-                        !cantidaderror,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandWoodMedium,
-                    contentColor = BrandBlack,
-                    disabledContainerColor = BrandWoodLight,
-                    disabledContentColor = BrandTextSecondary
-                )
-            ) {
+                // ── Tipo de descuento como chips ──────────────────────────────
                 Text(
-                    "➕ Agregar a la venta",
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    "Tipo de descuento",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = BrandTextSecondary
                 )
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-    if (mostrarDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                mostrarDialog = false
-            },
-            title = {
-                Text("Editar Precio")
-            },
-            text = {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Chip: Sin descuento
+                    DiscountChip(
+                        label = "Sin descuento",
+                        selected = selectedDiscount == null,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedDiscount = null
+                            selectedUnitDiscount = ""
+                            selectedGeneralDiscount = ""
+                        }
+                    )
+                    // Chip: Por prenda (unitario)
+                    DiscountChip(
+                        label = "Por prenda",
+                        selected = selectedDiscount == "unit",
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedDiscount = "unit"
+                            selectedGeneralDiscount = ""
+                        }
+                    )
+                    // Chip: General (sobre el total)
+                    DiscountChip(
+                        label = "General",
+                        selected = selectedDiscount == "general",
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedDiscount = "general"
+                            selectedUnitDiscount = ""
+                        }
+                    )
+                }
+
+                // ── Campo de descuento — aparece según el tipo elegido ────────
+                if (selectedDiscount == "unit") {
                     OutlinedTextField(
-                        value = changePrice,
-                        onValueChange = { changePrice = it },
-                        label = { Text("Nuevo precio") },
+                        value = selectedUnitDiscount,
+                        onValueChange = { selectedUnitDiscount = it },
+                        label = { Text("Descuento por prenda (S/)") },
                         modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = BrandBlack,
                             unfocusedBorderColor = BrandWoodMedium
                         )
                     )
-                    Spacer(Modifier.height(8.dp))
+                }
+                if (selectedDiscount == "general") {
+                    OutlinedTextField(
+                        value = selectedGeneralDiscount,
+                        onValueChange = { selectedGeneralDiscount = it },
+                        label = { Text("Descuento general (S/)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = BrandBlack,
+                            unfocusedBorderColor = BrandWoodMedium
+                        )
+                    )
+                }
+                //-----------------------------------------
+                // ── Card de total en negro ──────────────
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandBlack),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                "Total",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = BrandWoodMedium
+                            )
+                            Spacer(
+                                Modifier.height(4.dp)
+                            )
+                            Text(
+                                "S/ ${"%.2f".format(total)}",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandWarmWhite
+                            )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Ganancia",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = BrandWoodMedium
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        mostrarGanancia = !mostrarGanancia
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (mostrarGanancia)
+                                            Icons.Default.Visibility
+                                        else
+                                            Icons.Default.VisibilityOff,
+                                        contentDescription = "Mostrar ganancia",
+                                        tint = BrandWoodMedium,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = if (mostrarGanancia)
+                                    "S/ ${"%.2f".format(ganancia)}"
+                                else
+                                    "S/ ••••",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = BrandWoodMedium
+                            )
+                        }
+                    }
                 }
 
-            },
-            confirmButton = {
-                TextButton(
+                // ── Botón agregar a la venta ──────────────────────────────────
+                // TODO: ViewModel — agregarProducto() ya está en VentaViewModel, está bien
+                Button(
                     onClick = {
-                        val preciotemporal = changePrice.toDouble()
-                        precioProduct = preciotemporal
-                        mostrarDialog = false
-                    }
+                        val cantidad = cantPro.toLong()
+                        if (productoSeleccionado != null && nombreProduct.isNotBlank() && cantPro.isNotBlank()) {
+                            ventaViewModel.agregarProducto(
+                                productoSeleccionado.codigo,
+                                productoSeleccionado.nombre,
+                                productoSeleccionado.talla,
+                                productoSeleccionado.color,
+                                productoSeleccionado.local,
+                                cantidad,
+                                descuento,
+                                productoSeleccionado.costo,
+                                productoSeleccionado.precio,
+                                ganancia,
+                                total
+                            )
+                            ventaViewModel.resetProduct()
+                            val id = ventaViewModel.ventaActualId ?: "New"
+                            onToDetailVenta(id)
+                        }
+                    },
+                    enabled = productoSeleccionado != null &&
+                            nombreProduct.isNotBlank() &&
+                            cantPro.isNotBlank() &&
+                            !cantidaderror,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrandWoodMedium,
+                        contentColor = BrandBlack,
+                        disabledContainerColor = BrandWoodLight,
+                        disabledContentColor = BrandTextSecondary
+                    )
                 ) {
-                    Text("Aceptar")
+                    Text(
+                        "➕ Agregar a la venta",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
                 }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialog = false
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        if (mostrarDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    mostrarDialog = false
+                },
+                title = {
+                    Text("Editar Precio")
+                },
+                text = {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = changePrice,
+                            onValueChange = { changePrice = it },
+                            label = { Text("Nuevo precio") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandBlack,
+                                unfocusedBorderColor = BrandWoodMedium
+                            )
+                        )
+                        Spacer(Modifier.height(8.dp))
                     }
-                ) {
-                    Text("Cancelar")
-                }
-            },
-            containerColor = BrandWarmWhite,
-        )
+
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val preciotemporal = changePrice.toDouble()
+                            precioProduct = preciotemporal
+                            mostrarDialog = false
+                        }
+                    ) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            mostrarDialog = false
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                },
+                containerColor = BrandWarmWhite,
+            )
+        }
     }
 }
 
 
-// ── Componente chip de descuento ─────────────────────────────────────────────
-@Composable
-private fun DiscountChip(
-    label: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = if (selected) BrandBlack else BrandWarmWhite,
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.dp,
-            color = if (selected) BrandBlack else BrandWoodLight
-        )
+    // ── Componente chip de descuento ─────────────────────────────────────────────
+    @Composable
+    private fun DiscountChip(
+        label: String,
+        selected: Boolean,
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-            color = if (selected) BrandWarmWhite else BrandTextSecondary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
-            maxLines = 1
-        )
-    }
-}
-
-// ── calcularTotal — lógica intacta, sin ningún cambio ────────────────────────
-fun calcularTotal(
-    precio: Double,
-    cantidad: Long,
-    tipoDescuento: String?,
-    descuentoUnit: Double,
-    descuentoGeneral: Double,
-    costo: Double
-): Triple<Double, Double, Double> {
-    return when (tipoDescuento) {
-        "unit" -> {
-            val desc = cantidad * descuentoUnit
-            val gana = ((precio - costo) * cantidad) - desc
-            val total = cantidad * (precio - descuentoUnit)
-            Triple(desc, total, gana)
-        }
-
-        "general" -> {
-            val gana = ((precio - costo) * cantidad) - descuentoGeneral
-            val total = (cantidad * precio) - descuentoGeneral
-            Triple(descuentoGeneral, total, gana)
-        }
-
-        else -> {
-            val gana = (precio - costo) * cantidad
-            val total = cantidad * precio
-            Triple(0.0, total, gana)
+        Surface(
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape(10.dp),
+            color = if (selected) BrandBlack else BrandWarmWhite,
+            border = androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = if (selected) BrandBlack else BrandWoodLight
+            )
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                color = if (selected) BrandWarmWhite else BrandTextSecondary,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+                maxLines = 1
+            )
         }
     }
-}
+
+    // ── calcularTotal — lógica intacta, sin ningún cambio ────────────────────────
+    fun calcularTotal(
+        precio: Double,
+        cantidad: Long,
+        tipoDescuento: String?,
+        descuentoUnit: Double,
+        descuentoGeneral: Double,
+        costo: Double
+    ): Triple<Double, Double, Double> {
+        return when (tipoDescuento) {
+            "unit" -> {
+                val desc = cantidad * descuentoUnit
+                val gana = ((precio - costo) * cantidad) - desc
+                val total = cantidad * (precio - descuentoUnit)
+                Triple(desc, total, gana)
+            }
+
+            "general" -> {
+                val gana = ((precio - costo) * cantidad) - descuentoGeneral
+                val total = (cantidad * precio) - descuentoGeneral
+                Triple(descuentoGeneral, total, gana)
+            }
+
+            else -> {
+                val gana = (precio - costo) * cantidad
+                val total = cantidad * precio
+                Triple(0.0, total, gana)
+            }
+        }
+    }
