@@ -2,6 +2,7 @@ package com.example.myinventarioapp.ui.screens
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -52,6 +56,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,16 +167,17 @@ fun ProductsVenta(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     )
                     {
-                        Column(modifier = Modifier.weight(0.7f)) {}
+                        Column(modifier = Modifier.weight(0.7f).background(Color.Yellow)) {}
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(4.dp)
                                 .weight(1f)
+
                         ) {
                             Text(
                                 text = nombreProduct,
@@ -183,7 +189,7 @@ fun ProductsVenta(
                             Spacer(Modifier.height(6.dp))
                             Surface(
                                 color = BrandWoodLight.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(20.dp)
+                                shape = RoundedCornerShape(10.dp)
                             ) {
                                 Text(
                                     text = "Código: ${productoSeleccionado.codigo}",
@@ -193,88 +199,148 @@ fun ProductsVenta(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
                             }
-                            Row(modifier = Modifier.fillMaxWidth()) {
+                            Spacer(Modifier.height(6.dp))
+                            HorizontalDivider(
+                                modifier = Modifier.width(40.dp),
+                                color = BrandWoodLight.copy(alpha = 0.6f)
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Row(modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                                ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(4.dp)
-                                        .weight(0.5f),
+                                        .padding(vertical=4.dp)
+                                        .weight(0.6f),
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        text = "Talla",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Straighten,
+                                            contentDescription = "Talla",
+                                            modifier = Modifier.size(12.dp),
+                                            tint = BrandWoodLight
+                                        )
+
+                                        Text(
+                                            text = "Talla",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1
+                                        )
+                                    }
                                     Text(
                                         productoSeleccionado.talla,
                                         fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = BrandBlack
+                                        color = BrandBlack,
+                                        maxLines = 1
                                     )
                                 }
+                                VerticalDivider(
+                                    modifier = Modifier.height(35.dp),
+                                    color = BrandWoodLight.copy(alpha = 0.6f)
+                                )
                                 Column(
                                     modifier = Modifier
-                                        .fillMaxWidth()
                                         .padding(4.dp)
                                         .weight(0.8f),
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        text = "Color",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Palette,
+                                            contentDescription = "Color",
+                                            modifier = Modifier.size(12.dp),
+                                            tint = BrandWoodLight
+                                        )
+                                        Text(
+                                            text = "Color",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1
+                                        )
+                                    }
                                     Text(
                                         productoSeleccionado.color,
                                         fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = BrandBlack
+                                        color = BrandBlack,
+                                        maxLines = 1
                                     )
                                 }
+                                VerticalDivider(
+                                    modifier = Modifier.height(35.dp),
+                                    color = BrandWoodLight.copy(alpha = 0.6f)
+                                )
                                 Column(
                                     modifier = Modifier
-                                        .fillMaxWidth()
                                         .padding(4.dp)
                                         .weight(1f),
                                     verticalArrangement = Arrangement.spacedBy(4.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        text = "Sucursal",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Store,
+                                            contentDescription = "Sucursal",
+                                            modifier = Modifier.size(12.dp),
+                                            tint = BrandWoodLight
+                                        )
+                                        Text(
+                                            text = "Sucursal",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1
+                                        )
+                                    }
                                     Text(
                                         productoSeleccionado.local,
                                         fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = BrandBlack
+                                        color = BrandBlack,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text= "Stock disponible",
+//                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = BrandBlack
+                                )
+                                Surface(
+                                    color = BrandWoodLight.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(20.dp)
                                 ) {
-                                    Surface(
-                                        color = BrandWoodLight.copy(alpha = 0.5f),
-                                        shape = RoundedCornerShape(20.dp)
-                                    ) {
-                                        Text(
-                                            text = "Stock: ${productoSeleccionado.stock}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Medium,
-                                            color = Color.Green,
-                                        )
-                                    }
+                                    Text(
+                                        text = "${productoSeleccionado.stock} unidad",
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF2E7D32),
+                                    )
                                 }
                             }
                         }
