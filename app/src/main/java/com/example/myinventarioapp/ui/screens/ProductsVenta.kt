@@ -153,6 +153,29 @@ fun ProductsVenta(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+//            val tieneImagen: Boolean? = null
+//            if (tieneImagen) {
+//                Column(
+//                    modifier = Modifier
+//                        .weight(0.7f)
+//                ) {
+//                    // Aquí va tu AsyncImage o Image
+//                }
+//
+//                Spacer(modifier = Modifier.width(12.dp))
+//            }
+//
+//            Column(
+//                modifier = if (tieneImagen) {
+//                    Modifier.weight(1f)
+//                } else {
+//                    Modifier.fillMaxWidth()
+//                }
+//            ) {
+//
+//                // Todo tu contenido actual
+//
+//            }
 
             // ── Card del producto seleccionado ────────────────────────────
             if (productoSeleccionado != null) {
