@@ -232,7 +232,7 @@ fun ProductsVenta(
                             }
                             Spacer(Modifier.height(6.dp))
                             HorizontalDivider(
-                                modifier = Modifier.width(40.dp),
+                                modifier = Modifier.fillMaxWidth(),
                                 color = BrandWoodLight.copy(alpha = 0.6f)
                             )
                             Spacer(Modifier.height(6.dp))
@@ -352,15 +352,16 @@ fun ProductsVenta(
                                     .fillMaxWidth()
                                     .padding(4.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+//                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
                                     text= "Stock disponible",
-//                                    fontSize = 10.sp,
+//                                    modifier = Modifier.weight(1f),
                                     fontWeight = FontWeight.Medium,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = BrandBlack
                                 )
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Surface(
                                     color = BrandWoodLight.copy(alpha = 0.5f),
                                     shape = RoundedCornerShape(20.dp)
@@ -369,7 +370,7 @@ fun ProductsVenta(
                                         text = "${productoSeleccionado.stock} unidad",
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                         style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Medium,
+//                                        fontWeight = FontWeight.Medium,
                                         color = Color(0xFF2E7D32),
                                     )
                                 }
