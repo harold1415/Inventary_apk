@@ -13,18 +13,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.KeyboardReturn
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,12 +33,16 @@ import androidx.compose.ui.unit.dp
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
-import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(){
+    var selectedTransaction by remember {
+        mutableStateOf<String?>(null)
+    }
     Scaffold(
         topBar = {TopAppBar(
             title = { Text("Movimientos", color = BrandWarmWhite) },
@@ -74,6 +78,36 @@ fun TransactionsScreen(){
                 icon = Icons.Default.SwapHoriz
             ) {
 
+            }
+            // AQUÍ APARECE EL CONTENIDO
+            when (selectedTransaction) {
+
+                "transferencia" -> {
+                    Text(
+                        text = "Opciones de transferencia",
+                        color = BrandBlack,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                "devolucion" -> {
+                    Text(
+                        text = "Opciones de devolución",
+                        color = BrandBlack,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                "cambio" -> {
+                    Text(
+                        text = "Opciones de cambio",
+                        color = BrandBlack,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }
