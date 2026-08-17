@@ -106,8 +106,19 @@ fun TransactionsScreen(
                     icon = Icons.Default.CompareArrows,
                     selected = selectedTransaction == "transferencia"
                 ) {
-                    selectedTransaction = "transferencia"
+                    selectedTransaction =
+                        if (selectedTransaction == "transferencia") null
+                        else "transferencia"
                 }
+            }
+            // El contenido aparece inmediatamente debajo
+            if (selectedTransaction == "transferencia") {
+                item {
+                    TransferenciaOptions(
+                        locales = locales
+                    )
+                }
+
             }
 
             item {
@@ -117,7 +128,16 @@ fun TransactionsScreen(
                     icon = Icons.Default.KeyboardReturn,
                     selected = selectedTransaction == "devolucion"
                 ) {
-                    selectedTransaction = "devolucion"
+                    selectedTransaction =
+                        if (selectedTransaction == "devolucion") null
+                        else "devolucion"
+                }
+            }
+
+            // El contenido aparece inmediatamente debajo
+            if (selectedTransaction == "devolucion") {
+                item {
+                    DevolucionOptions()
                 }
             }
 
@@ -128,31 +148,16 @@ fun TransactionsScreen(
                     icon = Icons.Default.SwapHoriz,
                     selected = selectedTransaction == "cambio"
                 ) {
-                    selectedTransaction = "cambio"
+                    selectedTransaction =
+                        if (selectedTransaction == "cambio") null
+                        else "cambio"
                 }
             }
 
-            /*
-             * CONTENIDO
-             */
-
-            item {
-
-                when (selectedTransaction) {
-
-                    "transferencia" -> {
-                        TransferenciaOptions(
-                            locales = locales
-                        )
-                    }
-
-                    "devolucion" -> {
-                        DevolucionOptions()
-                    }
-
-                    "cambio" -> {
-                        CambioOptions()
-                    }
+            // El contenido aparece inmediatamente debajo
+            if (selectedTransaction == "cambio") {
+                item {
+                    CambioOptions()
                 }
             }
         }
