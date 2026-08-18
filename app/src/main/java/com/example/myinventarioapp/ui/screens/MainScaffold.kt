@@ -1,6 +1,5 @@
 package com.example.myinventarioapp.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +16,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 
 // 🔹 Este Composable representa la app "una vez logueado".
@@ -107,12 +105,19 @@ fun MainScaffold(
                         }
                     )
                 }
+//                composable("scanner") {
+//                    ScannerScreen(
+//                        onCodeScanned = { scannedCode ->
+//                            innerNavController.navigate("inventario?codigoEscaneado=$scannedCode") {
+//                                launchSingleTop = true
+//                                popUpTo("inventario?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+//                            }
+//                        }
+//                    )
+//                }
 
                 composable("ventas") {
                     VentaScreen(
-//                        onNavigateToDetailVenta = { ventaId ->
-//                            rootNavController.navigate("detailventa/$ventaId")
-//                        },
                         onNavigateToDetailVenta = { ventaId ->
                             innerNavController.navigate("detailventa/$ventaId")
                         },
@@ -201,9 +206,61 @@ fun MainScaffold(
                     )
                 }
 
-                composable ("move"){
-                    TransactionsScreen()
+                composable(
+                    "move?codScan={codScan}",
+                    listOf(
+                        navArgument("codScan"){
+                            type = NavType.StringType
+                            defaultValue =""
+                            nullable = true
+                        }
+                    )
+
+                ){  backStackEntry ->
+                    val codScan = backStackEntry.arguments?.getString("codScan") ?: ""
+                    TransactionsScreen(
+                        navController = innerNavController,
+                        codigoEscaneado = codScan,
+                    )
                 }
+                composable("scannerTrans") {
+                    ScannerScreen(
+                        onCodeScanned = { scannedCode ->
+                            innerNavController.navigate("SearchProducts?codigoEscaneado=$scannedCode") {
+                                launchSingleTop = true
+                                popUpTo("SearchProducts?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+                            }
+                        }
+                    )
+                }
+//                composable(
+//                    "SearchProducts?codigoEscaneado={codigoEscaneado}",
+//                    listOf(
+//                        navArgument("codigoEscaneado"){
+//                            type = NavType.StringType
+//                            defaultValue = ""
+//                            nullable = true
+//                        }
+//                    )
+//                ){ backStackEntry ->
+//                    val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
+//                    SearchProductScreen(
+//                        navController = innerNavController,
+//                        onToProductsVenta = {innerNavController.navigate("productsventa")},
+//                        codigoEscaneado = codigoEscaneado,
+//                        ventaViewModel = ventaViewModel
+//                    )
+//                }
+//                composable("scannerSearch") {
+//                    ScannerScreen(
+//                        onCodeScanned = { scannedCode ->
+//                            innerNavController.navigate("SearchProducts?codigoEscaneado=$scannedCode") {
+//                                launchSingleTop = true
+//                                popUpTo("SearchProducts?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+//                            }
+//                        }
+//                    )
+//                }
                 composable("setting") {
                     SettingScreen(
                         onNavigateToLocal = { rootNavController.navigate("local") }
