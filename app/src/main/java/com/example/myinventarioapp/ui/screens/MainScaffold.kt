@@ -207,9 +207,9 @@ fun MainScaffold(
                 }
 
                 composable(
-                    "move?codScan={codScan}",
+                    "TransferProduct?codigoEscaneado={codigoEscaneado}",
                     listOf(
-                        navArgument("codScan"){
+                        navArgument("codigoEscaneado"){
                             type = NavType.StringType
                             defaultValue =""
                             nullable = true
@@ -217,18 +217,18 @@ fun MainScaffold(
                     )
 
                 ){  backStackEntry ->
-                    val codScan = backStackEntry.arguments?.getString("codScan") ?: ""
+                    val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
                     TransactionsScreen(
                         navController = innerNavController,
-                        codigoEscaneado = codScan,
+                        codigoEscaneado = codigoEscaneado,
                     )
                 }
                 composable("scannerTrans") {
                     ScannerScreen(
                         onCodeScanned = { scannedCode ->
-                            innerNavController.navigate("SearchProducts?codigoEscaneado=$scannedCode") {
+                            innerNavController.navigate("TransferProduct?codigoEscaneado=$scannedCode") {
                                 launchSingleTop = true
-                                popUpTo("SearchProducts?codigoEscaneado={codigoEscaneado}") { inclusive = true }
+                                popUpTo("TransferProduct?codigoEscaneado={codigoEscaneado}") { inclusive = true }
                             }
                         }
                     )

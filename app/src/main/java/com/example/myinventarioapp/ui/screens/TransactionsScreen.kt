@@ -75,7 +75,6 @@ fun TransactionsScreen(
     var seccionAbierta by remember { mutableStateOf<String?>(null) }
 
     // ── Estados de la transferencia ──────────────────────────────────────
-    var query by remember { mutableStateOf(codigoEscaneado) }
     var isLoading by remember { mutableStateOf(false) }
     var isTransferring by remember { mutableStateOf(false) }
     var todasLasVariantes by remember { mutableStateOf(listOf<VarianteProducto>()) }
@@ -103,10 +102,12 @@ fun TransactionsScreen(
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
-            if (granted) navController.navigate("scanner/transferencia")
+            if (granted) navController.navigate("scannerTrans")
             else Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
         }
     )
+    var query by remember { mutableStateOf(codigoEscaneado) }
+
 
     // ── Lógica de búsqueda ───────────────────────────────────────────────
     fun buscarPorCodigo(codigo: String) {

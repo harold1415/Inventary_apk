@@ -39,7 +39,7 @@ val bottomTabs = listOf(
     BottomTab("home", "Inicio", Icons.Default.Home),
     BottomTab("inventario", "Inventario", Icons.Default.Inventory),
     BottomTab("ventas", "Ventas", Icons.Default.ShoppingCart),
-    BottomTab("move", "Tranfers", Icons.Default.CompareArrows),
+    BottomTab("TransferProduct", "Tranfers", Icons.Default.CompareArrows),
     BottomTab("reporte", "Reportes", Icons.Default.Analytics),
 //    BottomTab("setting", "Config", Icons.Default.Settings)
 
