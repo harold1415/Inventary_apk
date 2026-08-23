@@ -38,7 +38,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
@@ -46,8 +45,12 @@ import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
 import com.example.myinventarioapp.ui.theme.StockLowColor
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.myinventarioapp.ui.viewmodel.TranferViewModel
 
 data class VarianteProducto(
     val id: String,
@@ -64,10 +67,10 @@ data class VarianteProducto(
 @Composable
 fun TransactionsScreen(
     navController: NavHostController,
-    codigoEscaneado: String = ""
+    codigoEscaneado: String = "",
+    viewmodel : TranferViewModel
 ) {
-    AjustarBarraEstado(darkIcons = false)
-
+    val locales by viewmodel.locales.collectAsState() // Recuperamos la info del viewmodel
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
 
@@ -84,19 +87,7 @@ fun TransactionsScreen(
     var sucursalOrigenSeleccionada by remember { mutableStateOf("") }
     var sucursalDestinoSeleccionada by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
-    var locales by remember { mutableStateOf(listOf<Local>()) }
     var dropdownDestinoExpanded by remember { mutableStateOf(false) }
-
-    // Carga locales
-    LaunchedEffect(Unit) {
-        db.collection("locales").addSnapshotListener { snapshot, _ ->
-            snapshot?.let {
-                locales = it.documents.mapNotNull { doc ->
-                    doc.toObject(Local::class.java)?.copy(id = doc.id)
-                }
-            }
-        }
-    }
 
     // Permiso cámara
     val cameraPermissionLauncher = rememberLauncherForActivityResult(

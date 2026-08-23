@@ -6,6 +6,17 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+//CONTRUCTOR PARA CREAR LA LISTA DE VARIANTES
+data class VarianteProducto(
+    val id: String,
+    val nombre: String,
+    val modeloCod: String,
+    val talla: String,
+    val color: String,
+    val local: String,
+    val stock: Int,
+    val codigo: String
+)
 class TranferViewModel : ViewModel(){
 
     private val db = FirebaseFirestore.getInstance()
@@ -20,4 +31,6 @@ class TranferViewModel : ViewModel(){
             _locales.value = lista
         }
     }
+
+
 }
