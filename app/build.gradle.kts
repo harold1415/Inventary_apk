@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    //CLOUDINARY
+    implementation("com.cloudinary:cloudinary-android-core:3.1.2")
     //PARA VER GUARDAR IMAGENES
     implementation("io.coil-kt:coil-compose:2.4.0")
     //PARA GUARDAR IMAGENES,PDF'S,AUDIOS, ETC

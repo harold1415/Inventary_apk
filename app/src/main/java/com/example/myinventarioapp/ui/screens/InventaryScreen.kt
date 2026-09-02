@@ -365,31 +365,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
         }
 
         // Dialog detalle
-//        if (showVerDialog) {
-//            AlertDialog(onDismissRequest = { showVerDialog = false },
-//                containerColor = BrandWarmWhite,
-//                text = {
-//                    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-//                        selectedProduct?.let { product ->
-//                            Text(product.nombre, style = MaterialTheme.typography.titleLarge, color = BrandBlack)
-//                            Spacer(Modifier.height(8.dp))
-//                            val detalles = buildList {
-//                                add("Codigo" to product.codigo); add("Modelo" to product.modeloCod); add("Tipo" to product.tipo); add("Material" to product.material); add("Marca" to product.marca); add("Color" to product.color); add("Diseño" to product.diseno)
-//                                if (product.manga != "") add("Manga" to product.manga)
-//                                add("Talla" to product.talla); add("Stock" to product.stock.toString()); add("Corte" to product.corte); add("Local" to product.local); add("Costo" to "S/${product.costo}"); add("Precio Unit" to "S/${product.precio}"); add("Precio x Mayor" to "S/${product.precioxMayor}"); add("Fecha Ingreso" to formatFecha(product.fecha))
-//                            }
-//                            detalles.forEach { (label, value) ->
-//                                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-//                                    Text("$label:", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), color = BrandTextSecondary)
-//                                    Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp), fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
-//                                }
-//                            }
-//                        } ?: Text("Sin producto seleccionado")
-//                    }
-//                },
-//                confirmButton = { TextButton(onClick = { showVerDialog = false }) { Text("Cerrar") } }
-//            )
-//        }
         if (showVerDialog) {
 
             AlertDialog(
