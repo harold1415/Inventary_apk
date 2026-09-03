@@ -52,7 +52,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FilterList
@@ -84,6 +83,9 @@ import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.StockLowColor
+import com.example.myinventarioapp.uploadImageToCloudinary
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 data class Producto(
@@ -519,6 +521,67 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                 }
             )
         }
+        fun probarSubidaCloudinary() {
+            val bitmap = miBitmapSeleccionado
+
+            if (bitmap == null) {
+                Toast.makeText(
+                    context,
+                    "Primero selecciona una imagen",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+
+            scope.launch {
+
+                try {
+
+                    Toast.makeText(
+                        context,
+                        "Preparando imagen...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    val compressedBytes = bitmapToWebPBytes(
+                        bitmap = bitmap,
+                        quality = 75,
+                        maxSize = 1200
+                    )
+
+                    Toast.makeText(
+                        context,
+                        "Subiendo a Cloudinary...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // La operación de red se ejecuta en IO
+                    val imagenUrl = withContext(Dispatchers.IO) {
+                        uploadImageToCloudinary(compressedBytes)
+                    }
+
+                    // Aquí volvemos al hilo principal
+                    Toast.makeText(
+                        context,
+                        "¡Subida correcta!",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    println("CLOUDINARY URL: $imagenUrl")
+
+                } catch (e: Exception) {
+
+                    Toast.makeText(
+                        context,
+                        "Error: ${e::class.simpleName}: ${e.message ?: "sin mensaje"}",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    e.printStackTrace()
+                }
+            }
+        }
+
 
         // Dialog nuevo producto
         if (showDialog) {
@@ -528,25 +591,159 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                 confirmButton = {
                     Button(
                         onClick = {
-                            val nuevoCodigo = if (showmodeloCod) "MOD$modeloCod" else modeloCod
+
+                            val nuevoCodigo =
+                                if (showmodeloCod) "MOD$modeloCod" else modeloCod
+
                             modeloCod = nuevoCodigo
+
                             nombre = "$type $material $brand $color"
+
                             val stockInt = stock.toIntOrNull() ?: 0
-                            val costoInt = costo.toDoubleOrNull() ?: 0.0
-                            val precioInt = precio.toDoubleOrNull() ?: 0.0
-                            val precioMayInt = precioMay.toDoubleOrNull() ?: 0.0
-                            val codigo = "PRD" + System.currentTimeMillis().toString().takeLast(4) + (10..99).random()
-                            if (nombre.isBlank()) { Toast.makeText(context, "Ingresa nombre", Toast.LENGTH_SHORT).show(); return@Button }
-                            loadingMessage = "Añadiendo producto..."; isUploading = true
-                            if (miBitmapSeleccionado != null) {
-                                val compressedBytes = bitmapToWebPBytes(miBitmapSeleccionado!!, quality = 65)
-                                if (compressedBytes.size > 900_000) { isUploading = false; Toast.makeText(context, "Imagen demasiado grande", Toast.LENGTH_LONG).show(); return@Button }
-                                val imagenBase64 = Base64.encodeToString(compressedBytes, Base64.DEFAULT)
-                                val nuevoProducto = hashMapOf("codigo" to codigo, "nombre" to nombre, "tipo" to type, "talla" to talla, "stock" to stockInt, "modeloCod" to modeloCod, "color" to color, "corte" to style, "manga" to sleeve, "local" to local, "diseno" to design, "material" to material, "marca" to brand, "precioxMayor" to precioMayInt, "costo" to costoInt, "precio" to precioInt, "fecha" to FieldValue.serverTimestamp(), "imagenUrl" to imagenBase64)
-                                db.collection("productos").add(nuevoProducto).addOnSuccessListener { scope.launch { delay(3000); isUploading = false; showContinueDialog = true; Toast.makeText(context, "Producto agregado", Toast.LENGTH_SHORT).show(); nombre = ""; type = ""; talla = ""; stock = ""; color = " "; style = ""; sleeve = ""; local = ""; design = ""; material = ""; brand = ""; precioMay = ""; costo = ""; precio = ""; miBitmapSeleccionado = null } }.addOnFailureListener { scope.launch { delay(3000); isUploading = false; showDialog = false; Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show() } }
-                            } else {
-                                val nuevoProducto = hashMapOf("codigo" to codigo, "nombre" to nombre, "tipo" to type, "talla" to talla, "stock" to stockInt, "color" to color, "modeloCod" to modeloCod, "diseno" to design, "manga" to sleeve, "material" to material, "marca" to brand, "precioxMayor" to precioMayInt, "corte" to style, "local" to local, "costo" to costoInt, "precio" to precioInt, "fecha" to FieldValue.serverTimestamp())
-                                db.collection("productos").add(nuevoProducto).addOnSuccessListener { scope.launch { delay(3000); isUploading = false; showContinueDialog = true; Toast.makeText(context, "Producto agregado", Toast.LENGTH_SHORT).show() } }.addOnFailureListener { scope.launch { delay(3000); isUploading = false; showDialog = false; Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show() } }
+                            val costoDouble = costo.toDoubleOrNull() ?: 0.0
+                            val precioDouble = precio.toDoubleOrNull() ?: 0.0
+                            val precioMayDouble = precioMay.toDoubleOrNull() ?: 0.0
+
+                            val codigo =
+                                "PRD" + System.currentTimeMillis().toString().takeLast(4) +
+                                        (10..99).random()
+
+                            if (nombre.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    "Ingresa nombre",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                return@Button
+                            }
+
+                            loadingMessage =
+                                if (miBitmapSeleccionado != null)
+                                    "Subiendo imagen..."
+                                else
+                                    "Añadiendo producto..."
+
+                            isUploading = true
+
+                            scope.launch {
+
+                                try {
+
+                                    // --------------------------------
+                                    // 1. SUBIR IMAGEN A CLOUDINARY
+                                    // --------------------------------
+
+                                    val imagenUrl = miBitmapSeleccionado?.let { bitmap ->
+
+                                        val compressedBytes = bitmapToWebPBytes(
+                                            bitmap = bitmap,
+                                            quality = 75,
+                                            maxSize = 1200
+                                        )
+
+                                        if (compressedBytes.size > 900_000) {
+                                            throw Exception(
+                                                "La imagen sigue siendo demasiado grande"
+                                            )
+                                        }
+
+                                        loadingMessage = "Subiendo imagen..."
+
+                                        withContext(Dispatchers.IO) {
+                                            uploadImageToCloudinary(
+                                                compressedBytes
+                                            )
+                                        }
+
+                                    } ?: ""
+
+                                    // --------------------------------
+                                    // 2. CREAR PRODUCTO
+                                    // --------------------------------
+
+                                    loadingMessage = "Guardando producto..."
+
+                                    val nuevoProducto = hashMapOf(
+                                        "codigo" to codigo,
+                                        "nombre" to nombre,
+                                        "tipo" to type,
+                                        "talla" to talla,
+                                        "stock" to stockInt,
+                                        "modeloCod" to modeloCod,
+                                        "color" to color,
+                                        "corte" to style,
+                                        "manga" to sleeve,
+                                        "local" to local,
+                                        "diseno" to design,
+                                        "material" to material,
+                                        "marca" to brand,
+                                        "precioxMayor" to precioMayDouble,
+                                        "costo" to costoDouble,
+                                        "precio" to precioDouble,
+                                        "fecha" to FieldValue.serverTimestamp(),
+                                        "imagenUrl" to imagenUrl
+                                    )
+
+                                    // --------------------------------
+                                    // 3. GUARDAR EN FIRESTORE
+                                    // --------------------------------
+
+                                    db.collection("productos")
+                                        .add(nuevoProducto)
+                                        .addOnSuccessListener {
+
+                                            isUploading = false
+                                            showContinueDialog = true
+
+                                            Toast.makeText(
+                                                context,
+                                                "Producto agregado",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+
+                                            // Limpiar formulario
+                                            nombre = ""
+                                            type = ""
+                                            talla = ""
+                                            stock = ""
+                                            color = ""
+                                            style = ""
+                                            sleeve = ""
+                                            local = ""
+                                            design = ""
+                                            material = ""
+                                            brand = ""
+                                            precioMay = ""
+                                            costo = ""
+                                            precio = ""
+                                            miBitmapSeleccionado = null
+                                        }
+                                        .addOnFailureListener { error ->
+
+                                            isUploading = false
+
+                                            Toast.makeText(
+                                                context,
+                                                "Error al guardar: ${error.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+
+                                } catch (e: Exception) {
+
+                                    isUploading = false
+
+                                    Toast.makeText(
+                                        context,
+                                        "Error: ${e::class.simpleName}: ${
+                                            e.message ?: "sin mensaje"
+                                        }",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    e.printStackTrace()
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
@@ -592,6 +789,18 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = { launcher.launch("image/*") }, colors = ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)) { Text("Seleccionar imagen") }
                         miBitmapSeleccionado?.let { bmp -> Image(bitmap = bmp.asImageBitmap(), contentDescription = "Preview", modifier = Modifier.size(120.dp).padding(bottom = 8.dp)) }
+                        Button(
+                            onClick = {
+                                probarSubidaCloudinary()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandBlack,
+                                contentColor = BrandWarmWhite
+                            )
+                        ) {
+                            Text("Probar Cloudinary")
+                        }
+
                     }
                 }
             )
@@ -1135,13 +1344,71 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     }
 }
 
-fun bitmapToWebPBytes(bitmap: Bitmap, quality: Int = 80): ByteArray {
+//fun bitmapToWebPBytes(bitmap: Bitmap, quality: Int = 80): ByteArray {
+//    val stream = ByteArrayOutputStream()
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, quality, stream)
+//    else { @Suppress("DEPRECATION")
+//    bitmap.compress(Bitmap.CompressFormat.WEBP, quality, stream) }
+//    return stream.toByteArray()
+//}
+fun resizeBitmap(bitmap: Bitmap, maxSize: Int = 1200): Bitmap {
+    val width = bitmap.width
+    val height = bitmap.height
+
+    // Si ya es pequeña, no necesitamos redimensionarla
+    if (width <= maxSize && height <= maxSize) {
+        return bitmap
+    }
+
+    val ratio = minOf(
+        maxSize.toFloat() / width,
+        maxSize.toFloat() / height
+    )
+
+    val newWidth = (width * ratio).toInt()
+    val newHeight = (height * ratio).toInt()
+
+    return Bitmap.createScaledBitmap(
+        bitmap,
+        newWidth,
+        newHeight,
+        true
+    )
+}
+
+fun bitmapToWebPBytes(
+    bitmap: Bitmap,
+    quality: Int = 75,
+    maxSize: Int = 1200
+): ByteArray {
+
+    val resizedBitmap = resizeBitmap(bitmap, maxSize)
+
     val stream = ByteArrayOutputStream()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, quality, stream)
-    else { @Suppress("DEPRECATION")
-    bitmap.compress(Bitmap.CompressFormat.WEBP, quality, stream) }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        resizedBitmap.compress(
+            Bitmap.CompressFormat.WEBP_LOSSY,
+            quality,
+            stream
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        resizedBitmap.compress(
+            Bitmap.CompressFormat.WEBP,
+            quality,
+            stream
+        )
+    }
+
+    // Liberamos el Bitmap nuevo si fue creado
+    if (resizedBitmap !== bitmap) {
+        resizedBitmap.recycle()
+    }
+
     return stream.toByteArray()
 }
+
 
 @Composable
 fun ImagenDesdePosibleBase64OUrl(data: String?, modifier: Modifier = Modifier) {
