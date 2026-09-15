@@ -32,11 +32,13 @@ data class ProductoU(
     val codigo: String = "",
     val precioXMayor: Double = 0.0,
     val costo: Double = 0.0,
+    val imagenUrl: String = ""
 )
 
 //CLASE PARA AGREGAR PRODUCTO A LA LISTA DE DETAILVENTA
 data class Producto(
     val idDetalle: String = UUID.randomUUID().toString(),
+    val productoId: String = "",
     val codigo: String = "",
     val nombre: String = "",
     val talla:String="",
@@ -109,6 +111,7 @@ class VentaViewModel : ViewModel() {
     // FUNCION AGREGA EL PRODUCTO SELECCIONADO A LA LISTA DE LA VENTA - PRODUCTSVENTA.KT
     fun agregarProducto(
         codigo: String,
+        productoId: String,
         nombre: String,
         talla: String,
         color: String,
@@ -123,7 +126,7 @@ class VentaViewModel : ViewModel() {
         if (ventaLocal.isEmpty()) {
             ventaLocal = local
         }
-        val nuevoProducto = Producto(codigo=codigo, nombre=nombre,talla=talla,color = color, local=local,cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
+        val nuevoProducto = Producto(codigo=codigo, productoId = productoId, nombre=nombre,talla=talla,color = color, local=local,cantidad=cantidad, descuento=descuento, costo=costo, precio=precio,ganancia=ganancia, total=total)
         productos.add(nuevoProducto)
         productosModificados = true
         Log.d("VentaViewModel", "Producto agregado: $productos")
@@ -388,5 +391,40 @@ class VentaViewModel : ViewModel() {
 
     fun limpiarInsuficientes() {
         _insuficientes.value = emptyList()
+    }
+
+    //INVENTARY SCREEN
+    // GENERA EL CODIGO DEL MODELO
+    fun generarModeloCod(): String {
+        return "MOD" + UUID.randomUUID()
+            .toString()
+            .replace("-", "")
+            .take(8)
+            .uppercase()
+    }
+    fun generarModeloCodUnico(
+        onResult: (String) -> Unit
+    ) {
+        val codigo = generarModeloCod()
+
+        db.collection("productos")
+            .whereEqualTo("modeloCod", codigo)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { resultado ->
+
+                if (resultado.isEmpty) {
+                    onResult(codigo)
+                } else {
+                    generarModeloCodUnico(onResult)
+                }
+            }
+            .addOnFailureListener { error ->
+                Log.e(
+                    "ProductoViewModel",
+                    "Error comprobando modeloCod",
+                    error
+                )
+            }
     }
 }

@@ -505,26 +505,32 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 }
 
 // TODO: ViewModel — borrarVenta() debería estar en VentaListViewModel
-// para separar la lógica de negocio de la UI
 fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
     val db = FirebaseFirestore.getInstance()
-    db.collection("productos")
-        .whereIn("nombre", venta.productos.map { it.nombre })
-        .get()
-        .addOnSuccessListener { snapshot ->
-            val batch = db.batch()
-            venta.productos.forEach { p ->
-                val prodDoc = snapshot.documents.firstOrNull { it.getString("nombre") == p.nombre }
-                if (prodDoc != null) {
-                    val ref = db.collection("productos").document(prodDoc.id)
-                    batch.update(ref, "stock", FieldValue.increment(p.cantidad.toLong()))
-                }
-            }
-            val ventaRef = db.collection("ventas").document(venta.id)
-            batch.delete(ventaRef)
-            batch.commit()
-                .addOnSuccessListener { onComplete() }
-                .addOnFailureListener { e -> Log.e("VentaScreen", "Error borrando venta: ${e.message}") }
+    val batch = db.batch()
+
+    venta.productos.forEach { p ->
+
+        val ref = db.collection("productos").document(p.productoId)
+
+        batch.update(
+            ref,
+            "stock",
+            FieldValue.increment(p.cantidad)
+        )
+    }
+
+    val ventaRef = db.collection("ventas").document(venta.id)
+    batch.delete(ventaRef)
+
+    batch.commit()
+        .addOnSuccessListener {
+            onComplete()
         }
-        .addOnFailureListener { e -> Log.e("VentaScreen", "Error obteniendo productos: ${e.message}") }
+        .addOnFailureListener { e ->
+            Log.e(
+                "VentaScreen",
+                "Error borrando venta: ${e.message}"
+            )
+        }
 }

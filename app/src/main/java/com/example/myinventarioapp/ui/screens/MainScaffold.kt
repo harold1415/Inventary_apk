@@ -92,7 +92,8 @@ fun MainScaffold(
                     // para que esa navegación a pantalla completa funcione correctamente.
                     InventarioScreen(
                         navController = innerNavController,
-                        codigoEscaneado = codigoEscaneado
+                        codigoEscaneado = codigoEscaneado,
+                        ventaViewModel = ventaViewModel
                     )
                 }
                 composable("scannerInventary") {

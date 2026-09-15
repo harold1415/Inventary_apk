@@ -9,7 +9,9 @@ import org.json.JSONObject
 import java.io.IOException
 
 suspend fun uploadImageToCloudinary(
-    imageBytes: ByteArray
+    imageBytes: ByteArray,
+    modeloCod: String,
+    color: String
 ): String {
 
     val url =
@@ -20,6 +22,14 @@ suspend fun uploadImageToCloudinary(
         .addFormDataPart(
             "upload_preset",
             CloudinaryConfig.UPLOAD_PRESET
+        )
+        .addFormDataPart(
+            "folder",
+            "Lmodas"
+        )
+        .addFormDataPart(
+            "public_id",
+            "${modeloCod}_${color}"
         )
         .addFormDataPart(
             "file",

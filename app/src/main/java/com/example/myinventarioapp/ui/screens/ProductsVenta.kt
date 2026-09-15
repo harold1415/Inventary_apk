@@ -55,6 +55,7 @@ import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 
@@ -69,7 +70,7 @@ fun ProductsVenta(
     // TODO: ViewModel — productoSeleccionado debería observarse como StateFlow
     //PRODUCTO SELECCIONADO
     val productoSeleccionado = ventaViewModel.oneproduct.value
-
+    Log.d("prod_seleccion", "Producto seleccionado: $productoSeleccionado")
     // Controla los íconos de la Status Bar
     AjustarBarraEstado(darkIcons = false)
 
@@ -107,7 +108,7 @@ fun ProductsVenta(
 
     if (productoSeleccionado != null) {
         val (desc, tot, gan) = calcularTotal(
-            productoSeleccionado.precio,
+            precioProduct,
             cantidadNum,
             selectedDiscount,
             descuentoUnit,
@@ -153,30 +154,6 @@ fun ProductsVenta(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            val tieneImagen: Boolean = false
-            if (tieneImagen) {
-                Column(
-                    modifier = Modifier
-                        .weight(0.7f)
-                ) {
-                    // Aquí va tu AsyncImage o Image
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-            }
-
-            Column(
-                modifier = if (tieneImagen) {
-                    Modifier.weight(1f)
-                } else {
-                    Modifier.fillMaxWidth()
-                }
-            ) {
-
-                // Todo tu contenido actual
-
-            }
-
             // ── Card del producto seleccionado ────────────────────────────
             if (productoSeleccionado != null) {
                 Card(
@@ -192,19 +169,40 @@ fun ProductsVenta(
                             .fillMaxWidth()
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
-                        if(tieneImagen) {
-                            Column(modifier = Modifier.weight(0.7f).background(Color.Yellow)){
-                                Text("La foto")
+                    ) {
+                        val tieneImagen = productoSeleccionado.imagenUrl.isNotBlank()
+
+                        // ─────────────────────────────────────
+                        // FOTO: solo ocupa espacio si existe
+                        // ─────────────────────────────────────
+                        if (tieneImagen) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.5f)
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                ImagenDesdePosibleBase64OUrl(
+                                    productoSeleccionado.imagenUrl,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(12.dp))
+                                )
                             }
+
+                            Spacer(modifier = Modifier.width(12.dp))
                         }
+
+                        // ─────────────────────────────────────
+                        // INFORMACIÓN DEL PRODUCTO
+                        // ─────────────────────────────────────
                         Column(
-                            modifier = if(tieneImagen){Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp)
-                                .weight(1f)
-                            }else{
+                            modifier = if (tieneImagen) {
+                                Modifier
+                                    .weight(0.5f)
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            } else {
                                 Modifier
                                     .fillMaxWidth()
                                     .padding(4.dp)
@@ -238,7 +236,7 @@ fun ProductsVenta(
                             Spacer(Modifier.height(6.dp))
                             Row(modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
-                                ) {
+                            ) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -367,7 +365,7 @@ fun ProductsVenta(
                                     shape = RoundedCornerShape(20.dp)
                                 ) {
                                     Text(
-                                        text = "${productoSeleccionado.stock} unidad",
+                                        text = "${productoSeleccionado.stock} UND",
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                         style = MaterialTheme.typography.labelSmall,
 //                                        fontWeight = FontWeight.Medium,
@@ -376,8 +374,201 @@ fun ProductsVenta(
                                 }
                             }
                         }
+                            // ... todo el resto de tu información
                     }
+
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(12.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    )
+//                    {
+//                        if(tieneImagen) {
+//                            Column(modifier = Modifier.weight(0.7f).background(Color.Yellow)){
+//                                Text("La foto")
+//                            }
+//                        }
+//                        Column(
+//                            modifier = if(tieneImagen){Modifier
+//                                .fillMaxWidth()
+//                                .padding(4.dp)
+//                                .weight(1f)
+//                            }else{
+//                                Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(4.dp)
+//                            }
+//                        ) {
+//                            Text(
+//                                text = nombreProduct,
+//                                fontSize = 20.sp,
+//                                fontWeight = FontWeight.Bold,
+//                                color = BrandBlack,
+//                                maxLines = 2
+//                            )
+//                            Spacer(Modifier.height(6.dp))
+//                            Surface(
+//                                color = BrandWoodLight.copy(alpha = 0.5f),
+//                                shape = RoundedCornerShape(10.dp)
+//                            ) {
+//                                Text(
+//                                    text = "Código: ${productoSeleccionado.codigo}",
+//                                    style = MaterialTheme.typography.labelSmall,
+//                                    fontWeight = FontWeight.Medium,
+//                                    color = BrandTextSecondary,
+//                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+//                                )
+//                            }
+//                            Spacer(Modifier.height(6.dp))
+//                            HorizontalDivider(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                color = BrandWoodLight.copy(alpha = 0.6f)
+//                            )
+//                            Spacer(Modifier.height(6.dp))
+//                            Row(modifier = Modifier.fillMaxWidth(),
+//                                verticalAlignment = Alignment.CenterVertically
+//                                ) {
+//                                Column(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(vertical=4.dp)
+//                                        .weight(0.6f),
+//                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+//                                    horizontalAlignment = Alignment.CenterHorizontally
+//                                ) {
+//                                    Row(
+//                                        verticalAlignment = Alignment.CenterVertically,
+//                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                                    ) {
+//                                        Icon(
+//                                            imageVector = Icons.Default.Straighten,
+//                                            contentDescription = "Talla",
+//                                            modifier = Modifier.size(12.dp),
+//                                            tint = BrandWoodLight
+//                                        )
+//
+//                                        Text(
+//                                            text = "Talla",
+//                                            fontSize = 10.sp,
+//                                            fontWeight = FontWeight.Bold,
+//                                            maxLines = 1
+//                                        )
+//                                    }
+//                                    Text(
+//                                        productoSeleccionado.talla,
+//                                        fontSize = 10.sp,
+//                                        style = MaterialTheme.typography.bodySmall,
+//                                        color = BrandBlack,
+//                                        maxLines = 1
+//                                    )
+//                                }
+//                                VerticalDivider(
+//                                    modifier = Modifier.height(35.dp),
+//                                    color = BrandWoodLight.copy(alpha = 0.6f)
+//                                )
+//                                Column(
+//                                    modifier = Modifier
+//                                        .padding(4.dp)
+//                                        .weight(0.8f),
+//                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+//                                    horizontalAlignment = Alignment.CenterHorizontally
+//                                ) {
+//                                    Row(
+//                                        verticalAlignment = Alignment.CenterVertically,
+//                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                                    ) {
+//                                        Icon(
+//                                            imageVector = Icons.Default.Palette,
+//                                            contentDescription = "Color",
+//                                            modifier = Modifier.size(12.dp),
+//                                            tint = BrandWoodLight
+//                                        )
+//                                        Text(
+//                                            text = "Color",
+//                                            fontSize = 10.sp,
+//                                            fontWeight = FontWeight.Bold,
+//                                            maxLines = 1
+//                                        )
+//                                    }
+//                                    Text(
+//                                        productoSeleccionado.color,
+//                                        fontSize = 10.sp,
+//                                        style = MaterialTheme.typography.bodySmall,
+//                                        color = BrandBlack,
+//                                        maxLines = 1
+//                                    )
+//                                }
+//                                VerticalDivider(
+//                                    modifier = Modifier.height(35.dp),
+//                                    color = BrandWoodLight.copy(alpha = 0.6f)
+//                                )
+//                                Column(
+//                                    modifier = Modifier
+//                                        .padding(4.dp)
+//                                        .weight(1f),
+//                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+//                                    horizontalAlignment = Alignment.CenterHorizontally
+//                                ) {
+//                                    Row(
+//                                        verticalAlignment = Alignment.CenterVertically,
+//                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                                    ) {
+//                                        Icon(
+//                                            imageVector = Icons.Default.Store,
+//                                            contentDescription = "Sucursal",
+//                                            modifier = Modifier.size(12.dp),
+//                                            tint = BrandWoodLight
+//                                        )
+//                                        Text(
+//                                            text = "Sucursal",
+//                                            fontSize = 10.sp,
+//                                            fontWeight = FontWeight.Bold,
+//                                            maxLines = 1
+//                                        )
+//                                    }
+//                                    Text(
+//                                        productoSeleccionado.local,
+//                                        fontSize = 10.sp,
+//                                        style = MaterialTheme.typography.bodySmall,
+//                                        color = BrandBlack,
+//                                        maxLines = 1,
+//                                        overflow = TextOverflow.Ellipsis
+//                                    )
+//                                }
+//                            }
+//                            Row(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(4.dp),
+//                                verticalAlignment = Alignment.CenterVertically,
+////                                horizontalArrangement = Arrangement.SpaceBetween
+//                            ) {
+//                                Text(
+//                                    text= "Stock disponible",
+////                                    modifier = Modifier.weight(1f),
+//                                    fontWeight = FontWeight.Medium,
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = BrandBlack
+//                                )
+//                                Spacer(modifier = Modifier.width(12.dp))
+//                                Surface(
+//                                    color = BrandWoodLight.copy(alpha = 0.5f),
+//                                    shape = RoundedCornerShape(20.dp)
+//                                ) {
+//                                    Text(
+//                                        text = "${productoSeleccionado.stock} unidad",
+//                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+//                                        style = MaterialTheme.typography.labelSmall,
+////                                        fontWeight = FontWeight.Medium,
+//                                        color = Color(0xFF2E7D32),
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
                 }
+                //CARD PRECIO DE VENTA
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -715,6 +906,7 @@ fun ProductsVenta(
                         if (productoSeleccionado != null && nombreProduct.isNotBlank() && cantPro.isNotBlank()) {
                             ventaViewModel.agregarProducto(
                                 productoSeleccionado.codigo,
+                                productoSeleccionado.id,
                                 productoSeleccionado.nombre,
                                 productoSeleccionado.talla,
                                 productoSeleccionado.color,

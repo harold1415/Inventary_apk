@@ -49,6 +49,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -57,6 +58,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -75,6 +77,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.zIndex
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
@@ -83,6 +86,7 @@ import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.StockLowColor
+import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import com.example.myinventarioapp.uploadImageToCloudinary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -112,7 +116,7 @@ data class Producto(
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun InventarioScreen(navController: NavHostController, codigoEscaneado: String = "") {
+fun InventarioScreen(navController: NavHostController, codigoEscaneado: String = "",ventaViewModel: VentaViewModel) {
 
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
@@ -156,6 +160,14 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     var showmodeloCod by rememberSaveable(showDialog) { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
+    LaunchedEffect(showDialog) {
+        if (showDialog && modeloCod.isEmpty()) {
+
+            ventaViewModel.generarModeloCodUnico { codigo ->
+                modeloCod = codigo
+            }
+        }
+    }
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
@@ -368,7 +380,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
 
         // Dialog detalle
         if (showVerDialog) {
-
             AlertDialog(
                 onDismissRequest = { showVerDialog = false },
                 containerColor = BrandWarmWhite,
@@ -521,67 +532,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                 }
             )
         }
-        fun probarSubidaCloudinary() {
-            val bitmap = miBitmapSeleccionado
-
-            if (bitmap == null) {
-                Toast.makeText(
-                    context,
-                    "Primero selecciona una imagen",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
-
-            scope.launch {
-
-                try {
-
-                    Toast.makeText(
-                        context,
-                        "Preparando imagen...",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val compressedBytes = bitmapToWebPBytes(
-                        bitmap = bitmap,
-                        quality = 75,
-                        maxSize = 1200
-                    )
-
-                    Toast.makeText(
-                        context,
-                        "Subiendo a Cloudinary...",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // La operación de red se ejecuta en IO
-                    val imagenUrl = withContext(Dispatchers.IO) {
-                        uploadImageToCloudinary(compressedBytes)
-                    }
-
-                    // Aquí volvemos al hilo principal
-                    Toast.makeText(
-                        context,
-                        "¡Subida correcta!",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    println("CLOUDINARY URL: $imagenUrl")
-
-                } catch (e: Exception) {
-
-                    Toast.makeText(
-                        context,
-                        "Error: ${e::class.simpleName}: ${e.message ?: "sin mensaje"}",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    e.printStackTrace()
-                }
-            }
-        }
-
 
         // Dialog nuevo producto
         if (showDialog) {
@@ -591,12 +541,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                 confirmButton = {
                     Button(
                         onClick = {
-
-                            val nuevoCodigo =
-                                if (showmodeloCod) "MOD$modeloCod" else modeloCod
-
-                            modeloCod = nuevoCodigo
-
                             nombre = "$type $material $brand $color"
 
                             val stockInt = stock.toIntOrNull() ?: 0
@@ -652,7 +596,9 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
 
                                         withContext(Dispatchers.IO) {
                                             uploadImageToCloudinary(
-                                                compressedBytes
+                                                compressedBytes,
+                                                modeloCod,
+                                                color
                                             )
                                         }
 
@@ -749,17 +695,87 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                         colors = ButtonDefaults.buttonColors(containerColor = BrandBlack, contentColor = BrandWarmWhite)
                     ) { Text("Guardar") }
                 },
-                dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancelar") } },
+                dismissButton = { TextButton(onClick = { showDialog = false; miBitmapSeleccionado = null }) { Text("Cancelar") } },
                 title = { Text("➕ Nuevo producto") },
                 text = {
                     Column(modifier = Modifier.fillMaxWidth().heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
                         Spacer(Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = showmodeloCod, onCheckedChange = { showmodeloCod = it }, colors = CheckboxDefaults.colors(checkedColor = BrandBlack))
+                            Checkbox(
+                                checked = showmodeloCod,
+                                onCheckedChange = { activado ->
+
+                                    showmodeloCod = activado
+
+                                    if (activado) {
+                                        // Modo manual: borramos el código generado
+                                        modeloCod = "MOD"
+
+                                    } else {
+                                        // Modo automático: generamos nuevamente un código
+                                        ventaViewModel.generarModeloCodUnico { codigo ->
+                                            modeloCod = codigo
+                                        }
+                                    }
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = BrandBlack
+                                )
+                            )
                             Text("Añadir código del modelo")
                         }
-                        LaunchedEffect(showmodeloCod) { modeloCod = if (!showmodeloCod && modeloCod.isEmpty()) "MOD" + UUID.randomUUID().toString().take(4) else "" }
-                        OutlinedTextField(value = modeloCod, onValueChange = { modeloCod = it }, label = { Text("Codigo del modelo") }, modifier = Modifier.fillMaxWidth(), enabled = showmodeloCod, colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BrandBlack, unfocusedBorderColor = BrandWoodMedium))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .background(
+                                        color = BrandBlack,
+                                        shape = RoundedCornerShape(
+                                            topStart = 4.dp,
+                                            bottomStart = 4.dp
+                                        )
+                                    )
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "MOD",
+                                    color = BrandWarmWhite,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            OutlinedTextField(
+                                value = if (modeloCod.startsWith("MOD")) {
+                                    modeloCod.removePrefix("MOD")
+                                } else {
+                                    modeloCod
+                                },
+
+                                onValueChange = { nuevoValor ->
+                                    modeloCod = "MOD$nuevoValor"
+                                },
+
+                                placeholder = {
+                                    Text("Ej. A82F91C3")
+                                },
+
+                                modifier = Modifier.weight(1f),
+
+                                enabled = showmodeloCod,
+
+                                singleLine = true,
+
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BrandBlack,
+                                    unfocusedBorderColor = BrandWoodMedium
+                                )
+                            )
+                        }
                         Spacer(Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             ClothingItem(type = type, onTypeChange = { type = it }, modifier = Modifier.weight(1f))
@@ -789,55 +805,174 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = { launcher.launch("image/*") }, colors = ButtonDefaults.buttonColors(containerColor = BrandWoodMedium, contentColor = BrandBlack)) { Text("Seleccionar imagen") }
                         miBitmapSeleccionado?.let { bmp -> Image(bitmap = bmp.asImageBitmap(), contentDescription = "Preview", modifier = Modifier.size(120.dp).padding(bottom = 8.dp)) }
-                        Button(
-                            onClick = {
-                                probarSubidaCloudinary()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = BrandBlack,
-                                contentColor = BrandWarmWhite
-                            )
-                        ) {
-                            Text("Probar Cloudinary")
-                        }
-
                     }
                 }
             )
         }
 
+        //CONTINUAR INGRESO DE PRODUCTOS
         if (showContinueDialog) {
             AlertDialog(
                 onDismissRequest = { showContinueDialog = false },
-                title = { Text("Producto guardado") },
-                text = { Text("¿Deseas agregar otro producto?") },
-                confirmButton = { TextButton(onClick = { nombre = ""; color = ""; stock = ""; showContinueDialog = false; showDialog = true; focusRequester.requestFocus() }) { Text("Sí") } },
-                dismissButton = { TextButton(onClick = { nombre = ""; type = ""; talla = ""; stock = ""; color = ""; style = ""; sleeve = ""; local = ""; design = ""; material = ""; brand = ""; precioMay = ""; costo = ""; precio = ""; showContinueDialog = false; showDialog = false }) { Text("No") } }
+                title = {
+                    Text("Producto guardado")
+                },
+                text = {
+                    Text("¿Qué deseas hacer?")
+                },
+                confirmButton = {
+                    Column {
+
+                        // OPCIÓN 1
+                        TextButton(
+                            onClick = {
+                                // Por ahora dejamos la misma lógica
+                                // que teníamos para continuar
+                                nombre = ""
+                                talla = ""
+                                color = ""
+                                stock = ""
+
+                                showContinueDialog = false
+                                showDialog = true
+
+                                focusRequester.requestFocus()
+                            }
+                        ) {
+                            Text("➕ Agregar otra variante")
+                        }
+
+                        // OPCIÓN 2
+                        TextButton(
+                            onClick = {
+
+                                // Limpiar todos los datos del producto anterior
+                                nombre = ""
+                                type = ""
+                                talla = ""
+                                stock = ""
+                                color = ""
+                                style = ""
+                                sleeve = ""
+                                local = ""
+                                design = ""
+                                material = ""
+                                brand = ""
+                                precioMay = ""
+                                costo = ""
+                                precio = ""
+
+                                // Limpiar modelo anterior
+                                showmodeloCod = false
+                                ventaViewModel.generarModeloCodUnico { codigo ->
+                                    modeloCod = codigo
+                                }
+                                // Limpiar imagen
+                                miBitmapSeleccionado = null
+
+                                // Cerrar el mensaje
+                                showContinueDialog = false
+
+                                // Abrir formulario nuevamente
+                                showDialog = true
+                            }
+                        ) {
+                            Text("🔄 Nuevo producto")
+                        }
+
+                        // OPCIÓN 3
+                        TextButton(
+                            onClick = {
+                                showContinueDialog = false
+                                showDialog = false
+                            }
+                        ) {
+                            Text("❌ Terminar")
+                        }
+                    }
+                }
             )
         }
-
         // EDITAR UN PRODUCTO
         if (showEditDialog && selectedProduct != null) {
-            var showTallaDialog by remember {
-                mutableStateOf(false)
+
+            val producto = selectedProduct!!
+
+            var showTallaDialog by remember { mutableStateOf(false) }
+
+            var editNombre by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.nombre)
             }
-            var editNombre by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.nombre) }
-            var editTalla by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.talla) }
-            var editType by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.tipo) }
-            var editColor by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.color) }
-            var editManga by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.manga) }
-            var editBrand by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.marca) }
-            var editDesign by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.diseno) }
-            var editStyle by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.corte) }
-            var editcodmodel by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.modeloCod) }
-            var editMaterial by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.material) }
-            var editStock by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.stock.toString()) }
-            var editLocal by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.local) }
-            var editCosto by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.costo.toString()) }
-            var editPrecio by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precio.toString()) }
-            var editprecioMay by rememberSaveable(showEditDialog) { mutableStateOf(selectedProduct.precioxMayor.toString()) }
+
+            var editTalla by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.talla)
+            }
+
+            var editType by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.tipo)
+            }
+
+            var editColor by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.color)
+            }
+
+            var editManga by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.manga)
+            }
+
+            var editBrand by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.marca)
+            }
+
+            var editDesign by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.diseno)
+            }
+
+            var editStyle by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.corte)
+            }
+
+            var editcodmodel by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.modeloCod)
+            }
+
+            var editMaterial by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.material)
+            }
+
+            var editStock by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.stock.toString())
+            }
+
+            var editLocal by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.local)
+            }
+
+            var editCosto by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.costo.toString())
+            }
+
+            var editPrecio by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.precio.toString())
+            }
+
+            var editprecioMay by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.precioxMayor.toString())
+            }
+
+            // URL de la imagen que ya existe en Cloudinary
+            var editImage by rememberSaveable(showEditDialog) {
+                mutableStateOf(producto.imagenUrl)
+            }
+
             Dialog(
-                onDismissRequest = { showEditDialog = false }
+                onDismissRequest = {
+                    showEditDialog = false
+
+                    // Muy importante:
+                    // limpiamos la imagen nueva seleccionada
+                    miBitmapSeleccionado = null
+                }
             ) {
 
                 Surface(
@@ -855,8 +990,10 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                             .fillMaxWidth()
                     ) {
 
-
+                        // =====================================================
                         // TITULO
+                        // =====================================================
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -873,42 +1010,42 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                 )
 
                                 Text(
-                                    text = selectedProduct.modeloCod,
+                                    text = producto.modeloCod,
                                     fontSize = 13.sp,
                                     color = Color.Gray
                                 )
-
                             }
 
-
                             IconButton(
-                                onClick = { showEditDialog = false }
+                                onClick = {
+                                    showEditDialog = false
+                                    miBitmapSeleccionado = null
+                                }
                             ) {
 
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Cerrar"
+                                    contentDescription = "Cerrar",
+                                    tint = BrandBlack
                                 )
-
                             }
-
                         }
-
 
                         Spacer(
                             Modifier.height(12.dp)
                         )
-
 
                         Divider(
                             color = BrandWoodMedium
                         )
 
-
                         Spacer(
                             Modifier.height(12.dp)
                         )
 
+                        // =====================================================
+                        // CONTENIDO
+                        // =====================================================
 
                         Column(
                             modifier = Modifier
@@ -919,19 +1056,23 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
 
+                            // =================================================
+                            // INFORMACIÓN DEL PRODUCTO
+                            // =================================================
 
                             Text(
-                                "Información del producto",
+                                text = "Información del producto",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = BrandBlack
                             )
 
-
                             OutlinedTextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = editcodmodel,
-                                onValueChange = { editcodmodel = it },
+                                onValueChange = {
+                                    editcodmodel = it
+                                },
                                 label = {
                                     Text("Código del modelo")
                                 },
@@ -942,28 +1083,38 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                 )
                             )
 
-
                             ClothingItem(
                                 type = editType,
-                                onTypeChange = { editType = it }
+                                onTypeChange = {
+                                    editType = it
+                                }
                             )
-
 
                             MaterialItem(
                                 material = editMaterial,
-                                onMaterialChange = { editMaterial = it }
+                                onMaterialChange = {
+                                    editMaterial = it
+                                }
                             )
+
+                            // =================================================
+                            // TALLA
+                            // =================================================
+
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
 
-                                        Log.d("TALLA", "CLICK")
+                                        Log.d(
+                                            "TALLA",
+                                            "CLICK"
+                                        )
 
                                         showTallaDialog = true
-
                                     }
-                            ){
+                            ) {
+
                                 OutlinedTextField(
                                     value = editTalla,
                                     onValueChange = {},
@@ -979,28 +1130,33 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                         disabledLabelColor = BrandBlack
                                     )
                                 )
-
                             }
 
+                            // =================================================
+                            // DETALLES
+                            // =================================================
+
                             Text(
-                                "Detalles",
+                                text = "Detalles",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = BrandBlack
                             )
-
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
 
-
                                 OutlinedTextField(
                                     modifier = Modifier.weight(1f),
                                     value = editColor,
-                                    onValueChange = { editColor = it },
-                                    label = { Text("Color") },
+                                    onValueChange = {
+                                        editColor = it
+                                    },
+                                    label = {
+                                        Text("Color")
+                                    },
                                     singleLine = true,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = BrandBlack,
@@ -1008,12 +1164,15 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                     )
                                 )
 
-
                                 OutlinedTextField(
                                     modifier = Modifier.weight(1f),
                                     value = editStock,
-                                    onValueChange = { editStock = it },
-                                    label = { Text("Stock") },
+                                    onValueChange = {
+                                        editStock = it
+                                    },
+                                    label = {
+                                        Text("Stock")
+                                    },
                                     singleLine = true,
                                     keyboardOptions = KeyboardOptions(
                                         keyboardType = KeyboardType.Number
@@ -1023,72 +1182,81 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                         unfocusedBorderColor = BrandWoodMedium
                                     )
                                 )
-
                             }
-
-
 
                             BrandItem(
                                 brand = editBrand,
-                                onBrandChange = { editBrand = it }
+                                onBrandChange = {
+                                    editBrand = it
+                                }
                             )
-
 
                             DesingItem(
                                 desing = editDesign,
-                                onDesingChange = { editDesign = it }
+                                onDesingChange = {
+                                    editDesign = it
+                                }
                             )
-
 
                             CutItem(
                                 corte = editStyle,
-                                onCorteChange = { editStyle = it }
+                                onCorteChange = {
+                                    editStyle = it
+                                }
                             )
 
-
-                            if(
+                            if (
                                 editType == "Camisa" ||
                                 editType == "Polo"
-                            ){
+                            ) {
 
                                 TypeSleeve(
                                     sleeve = editManga,
-                                    onSleeveChange = { editManga = it }
+                                    onSleeveChange = {
+                                        editManga = it
+                                    }
                                 )
-
                             }
 
-
+                            // =================================================
+                            // UBICACIÓN
+                            // =================================================
 
                             Text(
-                                "Ubicación",
+                                text = "Ubicación",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = BrandBlack
                             )
-
 
                             LocalOption(
                                 listLocal = locales,
                                 local = editLocal,
-                                onLocalChange = { editLocal = it }
+                                onLocalChange = {
+                                    editLocal = it
+                                }
                             )
 
-
+                            // =================================================
+                            // PRECIOS
+                            // =================================================
 
                             Text(
-                                "Precios",
+                                text = "Precios",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = BrandBlack
                             )
-
 
                             OutlinedTextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = editCosto,
-                                onValueChange = { editCosto = it },
-                                label = { Text("Costo") },
+                                onValueChange = {
+                                    editCosto = it
+                                },
+                                label = {
+                                    Text("Costo")
+                                },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number
                                 ),
@@ -1097,13 +1265,16 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                     unfocusedBorderColor = BrandWoodMedium
                                 )
                             )
-
 
                             OutlinedTextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = editprecioMay,
-                                onValueChange = { editprecioMay = it },
-                                label = { Text("Precio Mayor") },
+                                onValueChange = {
+                                    editprecioMay = it
+                                },
+                                label = {
+                                    Text("Precio por Mayor")
+                                },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number
                                 ),
@@ -1112,13 +1283,16 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                     unfocusedBorderColor = BrandWoodMedium
                                 )
                             )
-
 
                             OutlinedTextField(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = editPrecio,
-                                onValueChange = { editPrecio = it },
-                                label = { Text("Precio") },
+                                onValueChange = {
+                                    editPrecio = it
+                                },
+                                label = {
+                                    Text("Precio")
+                                },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number
                                 ),
@@ -1128,93 +1302,241 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                 )
                             )
 
-
+                            // =================================================
+                            // IMAGEN
+                            // =================================================
 
                             Text(
-                                "Imagen",
+                                text = "Imagen",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = BrandBlack
                             )
 
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(170.dp)
+                                    .clip(
+                                        RoundedCornerShape(18.dp)
+                                    )
+                                    .background(
+                                        Color(0xFFF5F2ED)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = BrandWoodMedium,
+                                        shape = RoundedCornerShape(18.dp)
+                                    )
+                                    .clickable {
 
+                                        // Abrir galería
+                                        launcher.launch("image/*")
+                                    }
+                            ) {
 
-                            Button(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    launcher.launch("image/*")
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = BrandWoodMedium,
-                                    contentColor = BrandBlack
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ){
+                                // =================================================
+                                // CASO 1:
+                                // EL USUARIO SELECCIONÓ UNA NUEVA IMAGEN
+                                // =================================================
 
-                                Icon(
-                                    Icons.Default.Image,
-                                    contentDescription = null
-                                )
+                                if (miBitmapSeleccionado != null) {
 
-                                Spacer(
-                                    Modifier.width(8.dp)
-                                )
+                                    Image(
+                                        bitmap = miBitmapSeleccionado!!
+                                            .asImageBitmap(),
+                                        contentDescription = "Nueva imagen",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(
+                                                RoundedCornerShape(18.dp)
+                                            ),
+                                        contentScale = ContentScale.Crop
+                                    )
 
-                                Text("Seleccionar imagen")
+                                    // Etiqueta inferior
+                                    Surface(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .padding(8.dp),
+                                        shape = RoundedCornerShape(50),
+                                        color = Color.Black.copy(
+                                            alpha = 0.70f
+                                        )
+                                    ) {
 
-                            }
+                                        Text(
+                                            text = "Nueva imagen",
+                                            color = Color.White,
+                                            fontSize = 11.sp,
+                                            modifier = Modifier.padding(
+                                                horizontal = 12.dp,
+                                                vertical = 5.dp
+                                            )
+                                        )
+                                    }
+                                }
 
+                                // =================================================
+                                // CASO 2:
+                                // EL PRODUCTO YA TIENE IMAGEN
+                                // =================================================
 
+                                else if (editImage.isNotBlank()) {
 
-                            miBitmapSeleccionado?.let { bmp ->
+                                    AsyncImage(
+                                        model = editImage,
+                                        contentDescription = "Imagen actual del producto",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(
+                                                RoundedCornerShape(18.dp)
+                                            ),
+                                        contentScale = ContentScale.Crop
+                                    )
 
-                                Image(
-                                    bitmap = bmp.asImageBitmap(),
-                                    contentDescription = "Preview",
+                                    // Etiqueta inferior
+                                    Surface(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .padding(8.dp),
+                                        shape = RoundedCornerShape(50),
+                                        color = Color.Black.copy(
+                                            alpha = 0.70f
+                                        )
+                                    ) {
+
+                                        Text(
+                                            text = "Imagen actual",
+                                            color = Color.White,
+                                            fontSize = 11.sp,
+                                            modifier = Modifier.padding(
+                                                horizontal = 12.dp,
+                                                vertical = 5.dp
+                                            )
+                                        )
+                                    }
+                                }
+
+                                // =================================================
+                                // CASO 3:
+                                // NO TIENE IMAGEN
+                                // =================================================
+
+                                else {
+
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+
+                                        Icon(
+                                            imageVector = Icons.Default.Image,
+                                            contentDescription = null,
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(38.dp)
+                                        )
+
+                                        Spacer(
+                                            Modifier.height(6.dp)
+                                        )
+
+                                        Text(
+                                            text = "Agregar imagen",
+                                            color = Color.Gray,
+                                            fontSize = 13.sp
+                                        )
+
+                                        Text(
+                                            text = "Toca para seleccionar",
+                                            color = Color.Gray,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+
+                                // =================================================
+                                // BOTÓN EDITAR
+                                // =================================================
+
+                                Surface(
                                     modifier = Modifier
-                                        .size(140.dp)
-                                        .clip(
-                                            RoundedCornerShape(16.dp)
-                                        )
-                                        .align(
-                                            Alignment.CenterHorizontally
-                                        )
-                                )
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp),
+                                    shape = CircleShape,
+                                    color = BrandWarmWhite.copy(
+                                        alpha = 0.95f
+                                    ),
+                                    shadowElevation = 3.dp
+                                ) {
 
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Cambiar imagen",
+                                        tint = BrandBlack,
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .size(18.dp)
+                                    )
+                                }
                             }
 
+                            // Texto debajo
+                            Text(
+                                text = when {
+                                    miBitmapSeleccionado != null ->
+                                        "La nueva imagen reemplazará a la actual."
 
+                                    editImage.isNotBlank() ->
+                                        "Toca la imagen para seleccionar otra."
+
+                                    else ->
+                                        "Este producto no tiene una imagen."
+                                },
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
                         }
 
-
+                        // =====================================================
+                        // BOTONES INFERIORES
+                        // =====================================================
 
                         Spacer(
                             Modifier.height(16.dp)
                         )
 
-
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
-                        ){
+                        ) {
 
                             TextButton(
                                 onClick = {
-                                    showEditDialog=false
-                                }
-                            ){
-                                Text("Cancelar")
-                            }
 
+                                    showEditDialog = false
+
+                                    // Limpiar imagen nueva
+                                    miBitmapSeleccionado = null
+                                }
+                            ) {
+
+                                Text(
+                                    "Cancelar"
+                                )
+                            }
 
                             Spacer(
                                 Modifier.width(8.dp)
                             )
 
-
                             Button(
                                 onClick = {
+
+                                    // =========================================
+                                    // DATOS
+                                    // =========================================
 
                                     editNombre =
                                         "$editType $editMaterial $editBrand $editColor"
@@ -1222,93 +1544,178 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                                     val stockInt =
                                         editStock.toIntOrNull() ?: 0
 
-                                    val costoInt =
+                                    val costoDouble =
                                         editCosto.toDoubleOrNull() ?: 0.0
 
-                                    val precioInt =
+                                    val precioDouble =
                                         editPrecio.toDoubleOrNull() ?: 0.0
 
-                                    val precioMayor =
+                                    val precioMayorDouble =
                                         editprecioMay.toDoubleOrNull() ?: 0.0
 
-
                                     loadingMessage =
-                                        "Editando producto..."
+                                        if (miBitmapSeleccionado != null) {
+                                            "Subiendo nueva imagen..."
+                                        } else {
+                                            "Actualizando producto..."
+                                        }
 
                                     isUploading = true
 
+                                    scope.launch {
 
-                                    val actualizacion = mapOf(
-                                        "nombre" to editNombre,
-                                        "tipo" to editType,
-                                        "material" to editMaterial,
-                                        "talla" to editTalla,
-                                        "diseno" to editDesign,
-                                        "color" to editColor,
-                                        "modeloCod" to editcodmodel,
-                                        "marca" to editBrand,
-                                        "manga" to editManga,
-                                        "stock" to stockInt,
-                                        "corte" to editStyle,
-                                        "local" to editLocal,
-                                        "costo" to costoInt,
-                                        "precio" to precioInt,
-                                        "precioXMayor" to precioMayor
-                                    )
+                                        try {
 
+                                            // =====================================
+                                            // IMAGEN
+                                            // =====================================
 
-                                    db.collection("productos")
-                                        .document(selectedProduct.id)
-                                        .update(actualizacion)
-                                        .addOnSuccessListener {
+                                            val nuevaImagenUrl =
+                                                if (miBitmapSeleccionado != null) {
 
-                                            scope.launch {
+                                                    // ---------------------------------
+                                                    // 1. Convertir Bitmap a WebP
+                                                    // ---------------------------------
 
-                                                delay(3000)
+                                                    val compressedBytes =
+                                                        bitmapToWebPBytes(
+                                                            bitmap = miBitmapSeleccionado!!,
+                                                            quality = 75,
+                                                            maxSize = 1200
+                                                        )
 
-                                                isUploading=false
-                                                showEditDialog=false
+                                                    // ---------------------------------
+                                                    // 2. Verificar tamaño
+                                                    // ---------------------------------
 
-                                                Toast.makeText(
-                                                    context,
-                                                    "Producto actualizado",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
+                                                    if (compressedBytes.size > 900_000) {
 
-                                        }
+                                                        throw Exception(
+                                                            "La imagen sigue siendo demasiado grande"
+                                                        )
+                                                    }
 
-                                        .addOnFailureListener {
+                                                    // ---------------------------------
+                                                    // 3. Subir a Cloudinary
+                                                    // ---------------------------------
+
+                                                    loadingMessage =
+                                                        "Subiendo nueva imagen..."
+
+                                                    withContext(
+                                                        Dispatchers.IO
+                                                    ) {
+
+                                                        uploadImageToCloudinary(
+                                                            compressedBytes,modeloCod,
+                                                            color
+                                                        )
+                                                    }
+
+                                                } else {
+
+                                                    // =================================
+                                                    // NO CAMBIÓ LA IMAGEN
+                                                    // =================================
+
+                                                    editImage
+                                                }
+
+                                            // =====================================
+                                            // ACTUALIZACIÓN FIRESTORE
+                                            // =====================================
+
+                                            loadingMessage =
+                                                "Actualizando producto..."
+
+                                            val actualizacion = mapOf(
+                                                "nombre" to editNombre,
+                                                "tipo" to editType,
+                                                "material" to editMaterial,
+                                                "talla" to editTalla,
+                                                "diseno" to editDesign,
+                                                "color" to editColor,
+                                                "modeloCod" to editcodmodel,
+                                                "marca" to editBrand,
+                                                "manga" to editManga,
+                                                "stock" to stockInt,
+                                                "corte" to editStyle,
+                                                "local" to editLocal,
+                                                "costo" to costoDouble,
+                                                "precio" to precioDouble,
+                                                "precioxMayor" to precioMayorDouble,
+
+                                                // IMPORTANTE:
+                                                // conserva la antigua o guarda la nueva
+                                                "imagenUrl" to nuevaImagenUrl
+                                            )
+
+                                            db.collection("productos")
+                                                .document(producto.id)
+                                                .update(actualizacion)
+                                                .addOnSuccessListener {
+
+                                                    isUploading = false
+
+                                                    showEditDialog = false
+
+                                                    // Limpiar bitmap temporal
+                                                    miBitmapSeleccionado = null
+
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Producto actualizado",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                                .addOnFailureListener { error ->
+
+                                                    isUploading = false
+
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Error al actualizar: ${error.message}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+
+                                        } catch (e: Exception) {
+
+                                            isUploading = false
 
                                             Toast.makeText(
                                                 context,
-                                                "Error al actualizar: ${it.message}",
-                                                Toast.LENGTH_SHORT
+                                                "Error: ${e::class.simpleName}: ${
+                                                    e.message ?: "sin mensaje"
+                                                }",
+                                                Toast.LENGTH_LONG
                                             ).show()
 
+                                            e.printStackTrace()
                                         }
-
-
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = BrandBlack,
                                     contentColor = BrandWarmWhite
                                 ),
                                 shape = RoundedCornerShape(12.dp)
-                            ){
+                            ) {
 
-                                Text("Guardar")
-
+                                Text(
+                                    "Guardar"
+                                )
                             }
-
                         }
-
                     }
-
                 }
-
             }
-            if(showTallaDialog){
+
+            // =============================================================
+            // DIALOG DE TALLA
+            // =============================================================
+
+            if (showTallaDialog) {
 
                 TallaSelectorDialog(
                     tallaActual = editTalla,
@@ -1322,9 +1729,9 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
                         showTallaDialog = false
                     }
                 )
-
             }
         }
+
         // Dialog imagen zoom
         if (showImageDialog) {
             Dialog(onDismissRequest = { showImageDialog = false }) {
@@ -1344,13 +1751,6 @@ fun InventarioScreen(navController: NavHostController, codigoEscaneado: String =
     }
 }
 
-//fun bitmapToWebPBytes(bitmap: Bitmap, quality: Int = 80): ByteArray {
-//    val stream = ByteArrayOutputStream()
-//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, quality, stream)
-//    else { @Suppress("DEPRECATION")
-//    bitmap.compress(Bitmap.CompressFormat.WEBP, quality, stream) }
-//    return stream.toByteArray()
-//}
 fun resizeBitmap(bitmap: Bitmap, maxSize: Int = 1200): Bitmap {
     val width = bitmap.width
     val height = bitmap.height
@@ -1414,7 +1814,7 @@ fun bitmapToWebPBytes(
 fun ImagenDesdePosibleBase64OUrl(data: String?, modifier: Modifier = Modifier) {
     if (data.isNullOrEmpty()) return
     if (data.startsWith("http://") || data.startsWith("https://")) {
-        AsyncImage(model = data, contentDescription = null, modifier = modifier.size(150.dp).padding(bottom = 12.dp))
+        AsyncImage(model = data, contentDescription = null, modifier = modifier)
     } else {
         val bitmap: Bitmap? = try { val imageBytes = Base64.decode(data, Base64.DEFAULT); BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size) } catch (e: Exception) { Log.e("ImagenDecode", "Error: ${e.message}"); null }
         bitmap?.let { Image(bitmap = it.asImageBitmap(), contentDescription = null, modifier = modifier.size(150.dp).padding(bottom = 12.dp)) }
@@ -1463,7 +1863,7 @@ fun TallaDropdown(talla: String, onTallaChange: (String) -> Unit) {
 @Composable
 fun BrandItem(brand: String, onBrandChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val brandList = listOf("H.BOSS","POLO.R.L","THE.NORTH.FACE","LACOSTE","DOCKER","COLUMBIA","TOMMY","L'GANTS","LA.MARTINA","ARMANI","NIKE","ADIDAS","MR.GIORGIO","FLSZ","FASHION","PEPUÑO","DIANA RK.","MAXFLER")
+    val brandList = listOf("BRAVENT","H.BOSS","POLO.R.L","THE.NORTH.FACE","LACOSTE","DOCKER","COLUMBIA","TOMMY","L'GANTS","LA.MARTINA","ARMANI","NIKE","ADIDAS","MR.GIORGIO","FLSZ","FASHION","PEPUÑO","DIANA RK.","MAXFLER")
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(value = brand, onValueChange = {}, readOnly = true, label = { Text("Marca") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, modifier = Modifier.menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true))
@@ -1487,7 +1887,7 @@ fun TypeSleeve(sleeve: String, onSleeveChange: (String) -> Unit) {
 @Composable
 fun MaterialItem(material: String, onMaterialChange: (String) -> Unit, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
-    val materialList = listOf("Drill","Satinada","Oxford","Jean","Mezclilla","Seda","Pique","Pima","Chalis","Lino","Hilo","Dralon.Bayer","Acolchado","Pluma","Tazlan","Cordelina","Gamuza","Cuero Guante","Cuero","Algodón","Nylon","Poliester")
+    val materialList = listOf("Lolis","Drill","Satinada","Oxford","Jean","Mezclilla","Seda","Pique","Pima","Chalis","Lino","Hilo","Dralon.Bayer","Acolchado","Pluma","Tazlan","Cordelina","Gamuza","Cuero Guante","Cuero","Algodón","Nylon","Poliester")
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }, modifier = modifier) {
         OutlinedTextField(value = material, onValueChange = {}, readOnly = true, singleLine = true, label = { Text("Tela") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, modifier = Modifier.fillMaxWidth().menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true))
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 200.dp)) { materialList.forEach { opcion -> DropdownMenuItem(text = { Text(opcion, fontWeight = if (opcion == material) FontWeight.Bold else FontWeight.Normal, color = if (opcion == material) BrandBlack else Color.Unspecified) }, onClick = { onMaterialChange(opcion); expanded = false }) } }

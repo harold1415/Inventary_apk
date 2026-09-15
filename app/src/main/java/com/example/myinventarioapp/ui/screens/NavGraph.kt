@@ -87,7 +87,7 @@ fun AppNavGraph(navController: NavHostController) {
                 )
             ) { backStackEntry ->
                 val codigoEscaneado = backStackEntry.arguments?.getString("codigoEscaneado") ?: ""
-                InventarioScreen(navController = navController, codigoEscaneado = codigoEscaneado)
+                InventarioScreen(navController = navController, codigoEscaneado = codigoEscaneado,ventaViewModel = ventaViewModel)
             }
 
             composable("scanner") {
