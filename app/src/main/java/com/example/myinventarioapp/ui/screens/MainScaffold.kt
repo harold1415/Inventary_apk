@@ -48,7 +48,7 @@ fun MainScaffold(
         contentWindowInsets = WindowInsets(0), // 👈 le dice al Scaffold que no aplique insets
         bottomBar = {
             if (!hideBottomBar) {
-                BottomNavBar(innerNavController)
+                BottomNavBar(innerNavController, userRole = userRole)
             }
         }
     ) { padding ->

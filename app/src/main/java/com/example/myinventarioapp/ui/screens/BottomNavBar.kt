@@ -47,7 +47,7 @@ val bottomTabs = listOf(
 )
 
 @Composable
-fun BottomNavBar(navController: NavHostController) {
+fun BottomNavBar(navController: NavHostController, userRole : String) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -63,10 +63,13 @@ fun BottomNavBar(navController: NavHostController) {
                 it.route?.startsWith(tab.route) == true
             } == true
 
+            val inventarioBloqueado =
+                tab.route == "inventario" && userRole != "admin"
+
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    if (!selected) {
+                    if (!selected && !inventarioBloqueado) {
                         navController.navigate(tab.route) {
                             // 🔹 Evita acumular copias de la misma pantalla en el back stack
                             popUpTo(navController.graph.findStartDestination().id) {
