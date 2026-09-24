@@ -49,7 +49,7 @@ import com.example.myinventarioapp.ui.utils.SessionManager
 // TODO: Reemplaza con el ID de tu logo en drawable
 // Por ejemplo: R.drawable.tu_logo_aqui
 // Asegúrate de tener un archivo PNG o Vector Asset en la carpeta res/drawable
-val APP_LOGO_RES_ID = R.drawable.ic_menu_logo // Placeholder, ¡cámbialo!
+val APP_LOGO_RES_ID = R.drawable.ic_menu_logo1 // Placeholder, ¡cámbialo!
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
