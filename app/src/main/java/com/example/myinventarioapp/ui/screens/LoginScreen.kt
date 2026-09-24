@@ -91,10 +91,6 @@ fun LoginScreen(
         label = "cardMovement"
     )
     // MUEVE EL TAMAÑO DEL LOGO
-//    val animatedLogoSize by animateDpAsState(
-//        targetValue = if (isLoginScreenActive.value) 120.dp else 200.dp,
-//        animationSpec = tween(durationMillis = 1000)
-//    )
     val animatedLogoScale by animateFloatAsState(
         targetValue = if (isLoginScreenActive.value) 0.6f else 1f,
         animationSpec = tween(
@@ -104,10 +100,7 @@ fun LoginScreen(
         label = "logoScale"
     )
     // MUEVE LA ANIMACION
-//    val animatedBias by animateFloatAsState(
-//        targetValue = if (isLoginScreenActive.value) -0.8f else 0f,
-//        animationSpec = tween(durationMillis = 1000)
-//    )
+
     val animatedLogoOffset by animateFloatAsState(
         targetValue = if (isLoginScreenActive.value) -950f else 0f,
         animationSpec = tween(

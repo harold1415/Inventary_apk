@@ -54,7 +54,6 @@ fun MainScaffold(
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
-//                .background(BrandBlack)
         ) {
             NavHost(
                 navController = innerNavController,
@@ -122,7 +121,8 @@ fun MainScaffold(
                         onNavigateToDetailVenta = { ventaId ->
                             innerNavController.navigate("detailventa/$ventaId")
                         },
-                        ventaViewModel = ventaViewModel
+                        ventaViewModel = ventaViewModel,
+                        userRole = userRole
                     )
                 }
 

@@ -61,7 +61,7 @@ fun formatFecha(fecha: Timestamp?): String {
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: VentaViewModel) {
+fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: VentaViewModel, userRole:String) {
 
     // Controla los íconos de la Status Bar — negro con íconos blancos
     AjustarBarraEstado(darkIcons = false)
@@ -303,37 +303,39 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
-                                // Editar
-                                IconButton(
-                                    onClick = {
-                                        Log.d("VentaScreen", "ID de venta al editar: ${venta.id}")
-                                        ventaViewModel.productosModificados = false
-                                        ventaViewModel.ventaYaCargada = false
-                                        onNavigateToDetailVenta(venta.id)
-                                    },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Editar",
-                                        tint = BrandBlack,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                                // Eliminar
-                                IconButton(
-                                    onClick = {
-                                        eliminarDialog = true
-                                        ventaSeleccionada = venta
-                                    },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Eliminar",
-                                        tint = StockLowColor,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                if (userRole == "admin") {
+                                    // Editar
+                                    IconButton(
+                                        onClick = {
+                                            Log.d("VentaScreen", "ID de venta al editar: ${venta.id}")
+                                            ventaViewModel.productosModificados = false
+                                            ventaViewModel.ventaYaCargada = false
+                                            onNavigateToDetailVenta(venta.id)
+                                        },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Editar",
+                                            tint = BrandBlack,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    // Eliminar
+                                    IconButton(
+                                        onClick = {
+                                            eliminarDialog = true
+                                            ventaSeleccionada = venta
+                                        },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Eliminar",
+                                            tint = StockLowColor,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

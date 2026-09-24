@@ -68,6 +68,7 @@ fun BottomNavBar(navController: NavHostController, userRole : String) {
 
             NavigationBarItem(
                 selected = selected,
+                enabled = !inventarioBloqueado,
                 onClick = {
                     if (!selected && !inventarioBloqueado) {
                         navController.navigate(tab.route) {
