@@ -6,11 +6,13 @@ import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myinventarioapp.ui.model.Local
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -68,6 +70,7 @@ data class Venta(
 // VIEWMODEL
 // ----------------------------------
 class VentaViewModel : ViewModel() {
+    private val db = FirebaseFirestore.getInstance()
 
     // Lista observable de productos en la venta
     val productos = mutableStateListOf<Producto>()
@@ -75,8 +78,6 @@ class VentaViewModel : ViewModel() {
     // Producto seleccionado desde Search
     private val _oneproduct = mutableStateOf<ProductoU?>(null)
     val oneproduct: State<ProductoU?> = _oneproduct
-
-    private val db = FirebaseFirestore.getInstance()
 
     private val _insuficientes = MutableStateFlow<List<Producto>>(emptyList())
     val insuficientes: StateFlow<List<Producto>> = _insuficientes
@@ -96,6 +97,22 @@ class VentaViewModel : ViewModel() {
     // ----------------------------------
     // FUNCIONES AUXILIARES
     // ----------------------------------
+
+    // VENTASCREEN.KT
+    private val _locales = MutableStateFlow<List<Local>>(emptyList())
+    val locales = _locales.asStateFlow()
+    init {
+
+        // Cargar locales
+        db.collection("locales").addSnapshotListener { snapshot, _ ->
+            val lista = snapshot?.documents?.mapNotNull { doc ->
+                doc.toObject(Local::class.java)?.copy(id = doc.id)
+            } ?: emptyList()
+
+            _locales.value = lista
+        }
+    }
+
     fun resetearCarga() {
         ventaYaCargada = false
     }

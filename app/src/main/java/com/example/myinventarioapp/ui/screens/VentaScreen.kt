@@ -3,6 +3,7 @@ package com.example.myinventarioapp.ui.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,7 +22,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
@@ -38,6 +38,10 @@ import kotlin.text.ifEmpty
 import kotlin.text.isBlank
 import androidx.compose.foundation.border
 import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
@@ -45,6 +49,7 @@ import com.example.myinventarioapp.ui.theme.BrandWoodLight
 import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.StockLowColor
+import java.util.Calendar
 
 
 fun formatFecha(fecha: Timestamp?): String {
@@ -65,15 +70,15 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     // Controla los íconos de la Status Bar — negro con íconos blancos
     AjustarBarraEstado(darkIcons = false)
+    val locales by ventaViewModel.locales.collectAsState()
 
     val context = LocalContext.current
 
     // TODO: ViewModel — db debería instanciarse en VentaListViewModel, no en el Composable
     val db = FirebaseFirestore.getInstance()
 
-    // TODO: ViewModel — ventas y locales deberían ser StateFlow en VentaListViewModel
+    // TODO: ViewModel — ventas deberían ser StateFlow en VentaListViewModel
     var ventas by remember { mutableStateOf(listOf<Venta>()) }
-    var locales by remember { mutableStateOf(listOf<Local>()) }
 
     // Estados de UI — estos pueden quedarse en el Composable
     var mostrarEditDialogo by remember { mutableStateOf(false) }
@@ -85,6 +90,21 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     var filtredLocal by remember { mutableStateOf(false) }
     var selectedLocal by remember { mutableStateOf("") }
+
+    //PARA LA FECHA
+    var mostrarDatePicker by remember { mutableStateOf(false) }
+    val hoy = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+    }
+    var fechaSeleccionada by remember {
+        mutableStateOf(hoy.timeInMillis)
+    }
+
 
     // TODO: ViewModel — estas consultas a Firestore deberían estar en VentaListViewModel
     // usando addSnapshotListener dentro de init{} o en una función cargarVentas()
@@ -98,15 +118,6 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                         Log.e("VentaScreen", "Error parseando venta: ${e.message}")
                         null
                     }
-                }
-            }
-        }
-    }
-    LaunchedEffect(Unit) {
-        db.collection("locales").addSnapshotListener { snapshot, _ ->
-            snapshot?.let {
-                locales = it.documents.mapNotNull { doc ->
-                    doc.toObject(Local::class.java)?.copy(id = doc.id)
                 }
             }
         }
@@ -164,46 +175,143 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                 ) {
                     Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                         Spacer(Modifier.height(12.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = filtredLocal,
-                            onExpandedChange = { filtredLocal = !filtredLocal }
-                        ) {
-                            OutlinedTextField(
-                                value = selectedLocal.ifEmpty { "Todos los locales" },
-                                onValueChange = {},
-                                readOnly = true,
-                                shape = RoundedCornerShape(16.dp),
-                                label = { Text("Seleccionar sucursal") },
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = filtredLocal)
-                                },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = BrandBlack,
-                                    unfocusedBorderColor = BrandWoodMedium,
-                                    focusedContainerColor = BrandWarmWhite,
-                                    unfocusedContainerColor = BrandWarmWhite
-                                ),
+                        //FECHA Y LOCALES
+                        Row( modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(20.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
-                            )
-                            DropdownMenu(
-                                expanded = filtredLocal,
-                                onDismissRequest = { filtredLocal = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Todos los locales") },
-                                    onClick = { selectedLocal = ""; filtredLocal = false }
+                                    .clip(RoundedCornerShape(50))
+                                    .clickable {
+                                        mostrarDatePicker = true
+                                    },
+                                shape = RoundedCornerShape(50),
+                                color = BrandWarmWhite,
+                                border = BorderStroke(
+                                    1.dp,
+                                    BrandWoodLight
                                 )
-                                locales.forEach { local ->
-                                    DropdownMenuItem(
-                                        text = { Text("Sucursal ${local.nombre}") },
-                                        onClick = { selectedLocal = local.nombre; filtredLocal = false }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(
+                                        horizontal = 18.dp,
+                                        vertical = 9.dp
+                                    ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarMonth,
+                                        contentDescription = "Fecha",
+                                        tint = BrandWoodMedium,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.width(7.dp))
+
+                                    Text(
+                                        text = textoFechaChip(fechaSeleccionada),
+                                        color = BrandBlack,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 14.sp
+                                    )
+
+                                    Spacer(modifier = Modifier.width(4.dp))
+
+                                    Text(
+                                        text = "▼",
+                                        color = BrandTextSecondary,
+                                        fontSize = 10.sp
                                     )
                                 }
                             }
+                            ExposedDropdownMenuBox(
+                                expanded = filtredLocal,
+                                onExpandedChange = {
+                                    filtredLocal = !filtredLocal
+                                }
+                            ) {
+                                Surface(
+                                    modifier = Modifier
+                                        .menuAnchor(
+                                            type = MenuAnchorType.PrimaryNotEditable,
+                                            enabled = true
+                                        ),
+                                    shape = RoundedCornerShape(50),
+                                    color = BrandWarmWhite,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        BrandWoodLight
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(
+                                            horizontal = 14.dp,
+                                            vertical = 9.dp
+                                        ),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Icon(
+                                            imageVector = Icons.Default.LocationOn,
+                                            contentDescription = "Sucursal",
+                                            tint = BrandWoodMedium,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+
+                                        Spacer(modifier = Modifier.width(7.dp))
+
+                                        Text(
+                                            text = selectedLocal.ifBlank {
+                                                "Todas"
+                                            },
+                                            color = BrandBlack,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 14.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.width(5.dp))
+
+                                        Text(
+                                            text = "▼",
+                                            color = BrandTextSecondary,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+
+                                DropdownMenu(
+                                    expanded = filtredLocal,
+                                    onDismissRequest = {
+                                        filtredLocal = false
+                                    }
+                                ) {
+
+                                    // Opción: todas
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text("Todas las sucursales")
+                                        },
+                                        onClick = {
+                                            selectedLocal = ""
+                                            filtredLocal = false
+                                        }
+                                    )
+
+                                    // Sucursales de Firebase
+                                    locales.forEach { local ->
+
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(local.nombre)
+                                            },
+                                            onClick = {
+                                                selectedLocal = local.nombre
+                                                filtredLocal = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
-                        Spacer(Modifier.height(12.dp))
                     }
                 }
             }
@@ -503,6 +611,51 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                 }
             )
         }
+
+        if (mostrarDatePicker) {
+
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = fechaSeleccionada
+            )
+
+            DatePickerDialog(
+                onDismissRequest = {
+                    mostrarDatePicker = false
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+
+                            datePickerState.selectedDateMillis?.let { fecha ->
+                                fechaSeleccionada = fecha
+                            }
+
+                            mostrarDatePicker = false
+                        }
+                    ) {
+                        Text(
+                            text = "Aplicar",
+                            color = BrandBlack
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            mostrarDatePicker = false
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            ) {
+
+                DatePicker(
+                    state = datePickerState
+                )
+            }
+        }
+
     }
 }
 
@@ -535,4 +688,25 @@ fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
                 "Error borrando venta: ${e.message}"
             )
         }
+}
+
+fun textoFechaChip(timestamp: Long): String {
+    val calendario = Calendar.getInstance()
+    val seleccionada = Calendar.getInstance().apply {
+        timeInMillis = timestamp
+    }
+
+    val esHoy =
+        calendario.get(Calendar.YEAR) == seleccionada.get(Calendar.YEAR) &&
+                calendario.get(Calendar.DAY_OF_YEAR) == seleccionada.get(Calendar.DAY_OF_YEAR)
+
+    return if (esHoy) {
+        "Hoy"
+    } else {
+        SimpleDateFormat(
+            "dd MMM",
+            Locale("es", "ES")
+        ).format(timestamp)
+            .replaceFirstChar { it.uppercase() }
+    }
 }
