@@ -16,8 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.Locale
 import java.util.UUID
+import java.time.LocalDate
+import java.time.ZoneId
 
 // ----------------------------------
 // MODELOS DE DATOS
@@ -98,11 +101,14 @@ class VentaViewModel : ViewModel() {
     // FUNCIONES AUXILIARES
     // ----------------------------------
 
+    ////////////////////////////////////////////////////////////////////////////////////
     // VENTASCREEN.KT
     private val _locales = MutableStateFlow<List<Local>>(emptyList())
     val locales = _locales.asStateFlow()
-    init {
 
+    private val _ventasTo = MutableStateFlow<List<Venta>>(emptyList())
+    val ventasTo = _ventasTo.asStateFlow()
+    init {
         // Cargar locales
         db.collection("locales").addSnapshotListener { snapshot, _ ->
             val lista = snapshot?.documents?.mapNotNull { doc ->
@@ -111,8 +117,89 @@ class VentaViewModel : ViewModel() {
 
             _locales.value = lista
         }
+        // Cargar ventas
+        db.collection("ventas").addSnapshotListener { snapshot, _ ->
+            val lista = snapshot?.documents?.mapNotNull { doc ->
+                doc.toObject(Venta::class.java)?.copy(id = doc.id)
+            } ?: emptyList()
+
+            _ventasTo.value = lista
+        }
     }
 
+    fun filtrarVentas(
+        ventas: List<Venta>,
+        selectedLocal: String,
+        fechaSeleccionada: Long
+    ): List<Venta> {
+
+        val fechaSeleccionadaLocal = Instant.ofEpochMilli(fechaSeleccionada)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+
+        return ventas
+            .sortedByDescending { it.fecha }
+            .filter { venta ->
+
+                val fechaVenta = venta.fecha?.toDate()
+                    ?.toInstant()
+                    ?.atZone(ZoneId.systemDefault())
+                    ?.toLocalDate()
+
+                val coincideFecha = fechaVenta == fechaSeleccionadaLocal
+
+                val coincideLocal = selectedLocal.isBlank() ||
+                        venta.sucursal.equals(
+                            selectedLocal,
+                            ignoreCase = true
+                        )
+
+                coincideFecha && coincideLocal
+            }
+    }
+
+    //BORRAR UNA VENTA
+    fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val batch = db.batch()
+
+        venta.productos.forEach { p ->
+
+            val ref = db.collection("productos")
+                .document(p.productoId)
+
+            batch.update(
+                ref,
+                "stock",
+                FieldValue.increment(p.cantidad)
+            )
+        }
+
+        val ventaRef = db.collection("ventas")
+            .document(venta.id)
+
+        batch.delete(ventaRef)
+
+        batch.commit()
+            .addOnSuccessListener {
+
+                // Actualizar el estado del ViewModel
+                _ventasTo.value = _ventasTo.value.filter {
+                    it.id != venta.id
+                }
+
+                onComplete()
+            }
+            .addOnFailureListener { e ->
+                Log.e(
+                    "VentaViewModel",
+                    "Error borrando venta: ${e.message}"
+                )
+            }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////
     fun resetearCarga() {
         ventaYaCargada = false
     }

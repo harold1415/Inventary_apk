@@ -71,14 +71,8 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
     // Controla los íconos de la Status Bar — negro con íconos blancos
     AjustarBarraEstado(darkIcons = false)
     val locales by ventaViewModel.locales.collectAsState()
-
+    val ventas by ventaViewModel.ventasTo.collectAsState()
     val context = LocalContext.current
-
-    // TODO: ViewModel — db debería instanciarse en VentaListViewModel, no en el Composable
-    val db = FirebaseFirestore.getInstance()
-
-    // TODO: ViewModel — ventas deberían ser StateFlow en VentaListViewModel
-    var ventas by remember { mutableStateOf(listOf<Venta>()) }
 
     // Estados de UI — estos pueden quedarse en el Composable
     var mostrarEditDialogo by remember { mutableStateOf(false) }
@@ -102,35 +96,40 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
         }
     }
     var fechaSeleccionada by remember {
-        mutableStateOf(hoy.timeInMillis)
+        mutableLongStateOf(hoy.timeInMillis)
     }
 
 
     // TODO: ViewModel — estas consultas a Firestore deberían estar en VentaListViewModel
     // usando addSnapshotListener dentro de init{} o en una función cargarVentas()
-    LaunchedEffect(Unit) {
-        db.collection("ventas").addSnapshotListener { snapshot, _ ->
-            snapshot?.let {
-                ventas = it.documents.mapNotNull { doc ->
-                    try {
-                        doc.toObject(Venta::class.java)?.copy(id = doc.id)
-                    } catch (e: Exception) {
-                        Log.e("VentaScreen", "Error parseando venta: ${e.message}")
-                        null
-                    }
-                }
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        db.collection("ventas").addSnapshotListener { snapshot, _ ->
+//            snapshot?.let {
+//                ventas = it.documents.mapNotNull { doc ->
+//                    try {
+//                        doc.toObject(Venta::class.java)?.copy(id = doc.id)
+//                    } catch (e: Exception) {
+//                        Log.e("VentaScreen", "Error parseando venta: ${e.message}")
+//                        null
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     // TODO: ViewModel — el filtrado y ordenamiento también debería ir en VentaListViewModel
-    val productosFiltrados = ventas
-        .sortedByDescending { it.fecha }
-        .filter { venta ->
-            val coincideLocal = selectedLocal.isBlank() ||
-                    venta.sucursal.equals(selectedLocal, ignoreCase = true)
-            coincideLocal
-        }
+//    val ventasFiltro = ventas
+//        .sortedByDescending { it.fecha }
+//        .filter { venta ->
+//            val coincideLocal = selectedLocal.isBlank() ||
+//                    venta.sucursal.equals(selectedLocal, ignoreCase = true)
+//            coincideLocal
+//        }
+    val ventasFiltro = ventaViewModel.filtrarVentas(
+        ventas = ventas,
+        selectedLocal = selectedLocal,
+        fechaSeleccionada = fechaSeleccionada
+    )
 
     Scaffold(
         containerColor = BrandWarmBackground,
@@ -316,7 +315,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                 }
             }
 
-            items(productosFiltrados) { venta ->
+            items(ventasFiltro) { venta ->
                 // Card de venta rediseñada con la paleta de marca
                 Card(
                     modifier = Modifier
@@ -571,9 +570,8 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                                 onClick = {
                                     eliminarDialog = false
                                     ventaSeleccionada?.let { venta ->
-                                        ventas = ventas.filter { it.id != venta.id }
                                         ventaSeleccionada = null
-                                        borrarVenta(venta) {
+                                        ventaViewModel.borrarVenta(venta) {
                                             Toast.makeText(context, "Venta eliminada y stock restaurado", Toast.LENGTH_SHORT).show()
                                         }
                                     }
@@ -623,20 +621,30 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                     mostrarDatePicker = false
                 },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-
-                            datePickerState.selectedDateMillis?.let { fecha ->
-                                fechaSeleccionada = fecha
+                    Row {
+                        TextButton(
+                            onClick = {
+                                fechaSeleccionada = hoy.timeInMillis
+                                mostrarDatePicker = false
                             }
-
-                            mostrarDatePicker = false
+                        ) {
+                            Text("Hoy")
                         }
-                    ) {
-                        Text(
-                            text = "Aplicar",
-                            color = BrandBlack
-                        )
+                        TextButton(
+                            onClick = {
+
+                                datePickerState.selectedDateMillis?.let { fecha ->
+                                    fechaSeleccionada = fecha
+                                }
+
+                                mostrarDatePicker = false
+                            }
+                        ) {
+                            Text(
+                                text = "Aplicar",
+                                color = BrandBlack
+                            )
+                        }
                     }
                 },
                 dismissButton = {
@@ -660,35 +668,35 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 }
 
 // TODO: ViewModel — borrarVenta() debería estar en VentaListViewModel
-fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
-    val db = FirebaseFirestore.getInstance()
-    val batch = db.batch()
-
-    venta.productos.forEach { p ->
-
-        val ref = db.collection("productos").document(p.productoId)
-
-        batch.update(
-            ref,
-            "stock",
-            FieldValue.increment(p.cantidad)
-        )
-    }
-
-    val ventaRef = db.collection("ventas").document(venta.id)
-    batch.delete(ventaRef)
-
-    batch.commit()
-        .addOnSuccessListener {
-            onComplete()
-        }
-        .addOnFailureListener { e ->
-            Log.e(
-                "VentaScreen",
-                "Error borrando venta: ${e.message}"
-            )
-        }
-}
+//fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
+//    val db = FirebaseFirestore.getInstance()
+//    val batch = db.batch()
+//
+//    venta.productos.forEach { p ->
+//
+//        val ref = db.collection("productos").document(p.productoId)
+//
+//        batch.update(
+//            ref,
+//            "stock",
+//            FieldValue.increment(p.cantidad)
+//        )
+//    }
+//
+//    val ventaRef = db.collection("ventas").document(venta.id)
+//    batch.delete(ventaRef)
+//
+//    batch.commit()
+//        .addOnSuccessListener {
+//            onComplete()
+//        }
+//        .addOnFailureListener { e ->
+//            Log.e(
+//                "VentaScreen",
+//                "Error borrando venta: ${e.message}"
+//            )
+//        }
+//}
 
 fun textoFechaChip(timestamp: Long): String {
     val calendario = Calendar.getInstance()
