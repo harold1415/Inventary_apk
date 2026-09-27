@@ -22,6 +22,7 @@ import java.util.UUID
 import java.time.LocalDate
 import java.time.ZoneId
 
+
 // ----------------------------------
 // MODELOS DE DATOS
 // ----------------------------------
@@ -130,12 +131,8 @@ class VentaViewModel : ViewModel() {
     fun filtrarVentas(
         ventas: List<Venta>,
         selectedLocal: String,
-        fechaSeleccionada: Long
+        fechaSeleccionada: LocalDate
     ): List<Venta> {
-
-        val fechaSeleccionadaLocal = Instant.ofEpochMilli(fechaSeleccionada)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
 
         return ventas
             .sortedByDescending { it.fecha }
@@ -146,7 +143,7 @@ class VentaViewModel : ViewModel() {
                     ?.atZone(ZoneId.systemDefault())
                     ?.toLocalDate()
 
-                val coincideFecha = fechaVenta == fechaSeleccionadaLocal
+                val coincideFecha = fechaVenta == fechaSeleccionada
 
                 val coincideLocal = selectedLocal.isBlank() ||
                         venta.sucursal.equals(

@@ -50,6 +50,10 @@ import com.example.myinventarioapp.ui.theme.BrandWarmBackground
 import com.example.myinventarioapp.ui.theme.BrandTextSecondary
 import com.example.myinventarioapp.ui.theme.StockLowColor
 import java.util.Calendar
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 
 fun formatFecha(fecha: Timestamp?): String {
@@ -87,16 +91,19 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     //PARA LA FECHA
     var mostrarDatePicker by remember { mutableStateOf(false) }
-    val hoy = remember {
-        Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-    }
+//    val hoy = remember {
+//        Calendar.getInstance().apply {
+//            set(Calendar.HOUR_OF_DAY, 0)
+//            set(Calendar.MINUTE, 0)
+//            set(Calendar.SECOND, 0)
+//            set(Calendar.MILLISECOND, 0)
+//        }
+//    }
+//    var fechaSeleccionada by remember {
+//        mutableLongStateOf(hoy.timeInMillis)
+//    }
     var fechaSeleccionada by remember {
-        mutableLongStateOf(hoy.timeInMillis)
+        mutableStateOf(LocalDate.now())
     }
 
 
@@ -611,9 +618,11 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
         }
 
         if (mostrarDatePicker) {
-
             val datePickerState = rememberDatePickerState(
                 initialSelectedDateMillis = fechaSeleccionada
+                    .atStartOfDay(ZoneOffset.UTC)
+                    .toInstant()
+                    .toEpochMilli()
             )
 
             DatePickerDialog(
@@ -624,7 +633,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                     Row {
                         TextButton(
                             onClick = {
-                                fechaSeleccionada = hoy.timeInMillis
+                                fechaSeleccionada = LocalDate.now()
                                 mostrarDatePicker = false
                             }
                         ) {
@@ -633,9 +642,13 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                         TextButton(
                             onClick = {
 
-                                datePickerState.selectedDateMillis?.let { fecha ->
-                                    fechaSeleccionada = fecha
+                                datePickerState.selectedDateMillis?.let { millis ->
+                                    fechaSeleccionada = Instant
+                                        .ofEpochMilli(millis)
+                                        .atZone(ZoneOffset.UTC)
+                                        .toLocalDate()
                                 }
+
 
                                 mostrarDatePicker = false
                             }
@@ -698,23 +711,39 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 //        }
 //}
 
-fun textoFechaChip(timestamp: Long): String {
-    val calendario = Calendar.getInstance()
-    val seleccionada = Calendar.getInstance().apply {
-        timeInMillis = timestamp
-    }
+//fun textoFechaChip(timestamp: Long): String {
+//    val calendario = Calendar.getInstance()
+//    val seleccionada = Calendar.getInstance().apply {
+//        timeInMillis = timestamp
+//    }
+//
+//    val esHoy =
+//        calendario.get(Calendar.YEAR) == seleccionada.get(Calendar.YEAR) &&
+//                calendario.get(Calendar.DAY_OF_YEAR) == seleccionada.get(Calendar.DAY_OF_YEAR)
+//
+//    return if (esHoy) {
+//        "Hoy"
+//    } else {
+//        SimpleDateFormat(
+//            "dd MMM",
+//            Locale("es", "ES")
+//        ).format(timestamp)
+//            .replaceFirstChar { it.uppercase() }
+//    }
+//}
+fun textoFechaChip(fecha: LocalDate): String {
 
-    val esHoy =
-        calendario.get(Calendar.YEAR) == seleccionada.get(Calendar.YEAR) &&
-                calendario.get(Calendar.DAY_OF_YEAR) == seleccionada.get(Calendar.DAY_OF_YEAR)
+    val hoy = LocalDate.now()
 
-    return if (esHoy) {
+    return if (fecha == hoy) {
         "Hoy"
     } else {
-        SimpleDateFormat(
-            "dd MMM",
-            Locale("es", "ES")
-        ).format(timestamp)
-            .replaceFirstChar { it.uppercase() }
+        fecha.format(
+            DateTimeFormatter.ofPattern(
+                "dd MMM",
+                Locale("es", "ES")
+            )
+        ).replaceFirstChar { it.uppercase() }
     }
 }
+
