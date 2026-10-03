@@ -5,9 +5,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.example.myinventarioapp.ui.viewmodel.VentaViewModel
 import com.example.myinventarioapp.ui.viewmodel.Venta
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FieldValue
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,21 @@ import com.example.myinventarioapp.ui.theme.AjustarBarraEstado
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Badge
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.ReceiptLong
+import androidx.compose.material.icons.outlined.Store
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.window.Dialog
 import com.example.myinventarioapp.ui.theme.BrandBlack
 import com.example.myinventarioapp.ui.theme.BrandWarmWhite
 import com.example.myinventarioapp.ui.theme.BrandWoodMedium
@@ -54,6 +67,8 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.graphics.Color
+
 
 
 fun formatFecha(fecha: Timestamp?): String {
@@ -461,93 +476,449 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
             item { Spacer(Modifier.height(8.dp)) }
         }
 
+//        // Dialog: ver detalle completo de la venta
+//        if (mostrarEditDialogo && ventaSeleccionada != null) {
+//            Log.d("venta", ":${ventaSeleccionada!!.productos}")
+//            AlertDialog(
+//                onDismissRequest = { mostrarEditDialogo = false },
+//                containerColor = BrandWarmWhite,
+//                title = { Text("Detalle de la venta", color = BrandBlack) },
+//                text = {
+//                    Column {
+//                        Text("Vendedor: ${ventaSeleccionada!!.vendedor ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
+//                        Text("Sucursal: ${ventaSeleccionada!!.sucursal}", fontWeight = FontWeight.Bold)
+//                        Text("Cliente: ${ventaSeleccionada!!.cliente ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
+//                        Text("DNI: ${ventaSeleccionada!!.dni ?: "No registrado"}", fontWeight = FontWeight.Bold)
+//                        Text("Fecha: ${formatFecha(ventaSeleccionada!!.fecha)}", fontWeight = FontWeight.Bold)
+//
+//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+//
+//                        Text("Productos:", fontWeight = FontWeight.Bold)
+//                        Text(
+//                            "Talla     Cant.    Precio    Desc.   Total  ",
+//                            fontSize = 15.sp,
+//                            color = BrandTextSecondary,
+//                            modifier = Modifier.fillMaxWidth(),
+//                            textAlign = TextAlign.End
+//                        )
+//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+//
+//                        ventaSeleccionada!!.productos.forEach {
+//                            Column {
+//                                Text("• " + run {
+//                                    val palabras = it.nombre.split(" ")
+//                                    if (palabras.size <= 2 || it.nombre.length <= 35) it.nombre
+//                                    else {
+//                                        val ultimas = palabras.takeLast(2).joinToString(" ")
+//                                        val resto = palabras.dropLast(2).joinToString(" ")
+//                                        val restoCortado = if (resto.length > (25 - ultimas.length - 4))
+//                                            resto.take(25 - ultimas.length - 4) + "..."
+//                                        else resto
+//                                        "$restoCortado $ultimas"
+//                                    }
+//                                })
+//                                val detalle = String.format(
+//                                    "%3s %3dUND %6.2f -%2.2f %6.2f",
+//                                    it.talla, it.cantidad, it.precio, it.descuento, it.total
+//                                )
+//                                Text(
+//                                    text = detalle,
+//                                    fontFamily = FontFamily.Monospace,
+//                                    fontSize = 14.sp,
+//                                    modifier = Modifier.fillMaxWidth(),
+//                                    textAlign = TextAlign.End,
+//                                    color = BrandTextSecondary
+//                                )
+//                            }
+//                        }
+//
+//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+//
+//                        val totalDescuento = ventaSeleccionada!!.productos.sumOf { it.descuento }
+//                        Text(
+//                            text = "Descuento: S/${totalDescuento}",
+//                            textAlign = TextAlign.End,
+//                            modifier = Modifier.fillMaxWidth(),
+//                            color = BrandTextSecondary
+//                        )
+//                        Text(
+//                            text = "Total: S/${"%.2f".format(ventaSeleccionada!!.totalGen)}",
+//                            textAlign = TextAlign.End,
+//                            modifier = Modifier.fillMaxWidth(),
+//                            fontWeight = FontWeight.Bold,
+//                            color = BrandBlack
+//                        )
+//                        Text(
+//                            text = "Ganancia: S/${"%.2f".format(ventaSeleccionada!!.ganancia)}",
+//                            textAlign = TextAlign.End,
+//                            modifier = Modifier.fillMaxWidth(),
+//                            color = BrandWoodMedium
+//                        )
+//                    }
+//                },
+//                confirmButton = {
+//                    TextButton(onClick = { mostrarEditDialogo = false }) {
+//                        Text("Cerrar")
+//                    }
+//                }
+//            )
+//        }
+
         // Dialog: ver detalle completo de la venta
         if (mostrarEditDialogo && ventaSeleccionada != null) {
-            Log.d("venta", ":${ventaSeleccionada!!.productos}")
-            AlertDialog(
-                onDismissRequest = { mostrarEditDialogo = false },
-                containerColor = BrandWarmWhite,
-                title = { Text("Detalle de la venta", color = BrandBlack) },
-                text = {
-                    Column {
-                        Text("Vendedor: ${ventaSeleccionada!!.vendedor ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
-                        Text("Sucursal: ${ventaSeleccionada!!.sucursal}", fontWeight = FontWeight.Bold)
-                        Text("Cliente: ${ventaSeleccionada!!.cliente ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
-                        Text("DNI: ${ventaSeleccionada!!.dni ?: "No registrado"}", fontWeight = FontWeight.Bold)
-                        Text("Fecha: ${formatFecha(ventaSeleccionada!!.fecha)}", fontWeight = FontWeight.Bold)
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+            val venta = ventaSeleccionada!!
+            val totalDescuento = venta.productos.sumOf { it.descuento }
 
-                        Text("Productos:", fontWeight = FontWeight.Bold)
-                        Text(
-                            "Talla     Cant.    Precio    Desc.   Total  ",
-                            fontSize = 15.sp,
-                            color = BrandTextSecondary,
+            Dialog(
+                onDismissRequest = { mostrarEditDialogo = false }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    color = BrandWarmWhite,
+                    tonalElevation = 8.dp
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(22.dp)
+                    ) {
+
+                        // ─────────────────────────────
+                        // CABECERA
+                        // ─────────────────────────────
+
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.End
-                        )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
-                        ventaSeleccionada!!.productos.forEach {
-                            Column {
-                                Text("• " + run {
-                                    val palabras = it.nombre.split(" ")
-                                    if (palabras.size <= 2 || it.nombre.length <= 35) it.nombre
-                                    else {
-                                        val ultimas = palabras.takeLast(2).joinToString(" ")
-                                        val resto = palabras.dropLast(2).joinToString(" ")
-                                        val restoCortado = if (resto.length > (25 - ultimas.length - 4))
-                                            resto.take(25 - ultimas.length - 4) + "..."
-                                        else resto
-                                        "$restoCortado $ultimas"
-                                    }
-                                })
-                                val detalle = String.format(
-                                    "%3s %3dUND %6.2f -%2.2f %6.2f",
-                                    it.talla, it.cantidad, it.precio, it.descuento, it.total
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(BrandWoodLight.copy(alpha = 0.35f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ReceiptLong,
+                                    contentDescription = null,
+                                    tint = BrandWoodMedium,
+                                    modifier = Modifier.size(27.dp)
                                 )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
                                 Text(
-                                    text = detalle,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.End,
+                                    text = "Detalle de venta",
+                                    fontSize = 21.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandBlack
+                                )
+
+                                Text(
+                                    text = formatFecha(venta.fecha),
+                                    fontSize = 13.sp,
                                     color = BrandTextSecondary
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { mostrarEditDialogo = false }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cerrar",
+                                    tint = BrandTextSecondary
                                 )
                             }
                         }
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        val totalDescuento = ventaSeleccionada!!.productos.sumOf { it.descuento }
-                        Text(
-                            text = "Descuento: S/${totalDescuento}",
-                            textAlign = TextAlign.End,
+
+                        // ─────────────────────────────
+                        // INFORMACIÓN DE LA VENTA
+                        // ─────────────────────────────
+
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            color = BrandTextSecondary
-                        )
-                        Text(
-                            text = "Total: S/${"%.2f".format(ventaSeleccionada!!.totalGen)}",
-                            textAlign = TextAlign.End,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+
+                            InfoItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Person,
+                                label = "Cliente",
+                                value = venta.cliente ?: "Sin nombre"
+                            )
+
+                            InfoItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Badge,
+                                label = "DNI",
+                                value = venta.dni ?: "No registrado"
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            fontWeight = FontWeight.Bold,
-                            color = BrandBlack
-                        )
-                        Text(
-                            text = "Ganancia: S/${"%.2f".format(ventaSeleccionada!!.ganancia)}",
-                            textAlign = TextAlign.End,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+
+                            InfoItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.Store,
+                                label = "Sucursal",
+                                value = venta.sucursal
+                            )
+
+                            InfoItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Outlined.PersonOutline,
+                                label = "Vendedor",
+                                value = venta.vendedor ?: "Sin nombre"
+                            )
+                        }
+
+
+                        Spacer(modifier = Modifier.height(22.dp))
+
+
+                        // ─────────────────────────────
+                        // PRODUCTOS
+                        // ─────────────────────────────
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Text(
+                                text = "Productos",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandBlack
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = BrandWoodLight.copy(alpha = 0.35f)
+                            ) {
+                                Text(
+                                    text = "${venta.productos.size}",
+                                    modifier = Modifier.padding(
+                                        horizontal = 9.dp,
+                                        vertical = 3.dp
+                                    ),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandWoodMedium
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+
+                        // Cabecera tabla
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    BrandWoodLight.copy(alpha = 0.20f),
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .padding(
+                                    horizontal = 12.dp,
+                                    vertical = 8.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Text(
+                                text = "Producto",
+                                modifier = Modifier.weight(1.7f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandTextSecondary
+                            )
+
+                            Text(
+                                text = "Cant.",
+                                modifier = Modifier.weight(0.6f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandTextSecondary,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text = "Total",
+                                modifier = Modifier.weight(0.8f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandTextSecondary,
+                                textAlign = TextAlign.End
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+
+                        // Lista de productos
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 260.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+
+                            venta.productos.forEach { producto ->
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = 8.dp,
+                                            vertical = 10.dp
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Column(
+                                        modifier = Modifier.weight(1.7f)
+                                    ) {
+
+                                        Text(
+                                            text = producto.nombre,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = BrandBlack,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        Text(
+                                            text = "Talla ${producto.talla}  •  S/${"%.2f".format(producto.precio)}",
+                                            fontSize = 11.sp,
+                                            color = BrandTextSecondary
+                                        )
+                                    }
+
+                                    Text(
+                                        text = "${producto.cantidad}",
+                                        modifier = Modifier.weight(0.6f),
+                                        fontSize = 13.sp,
+                                        color = BrandTextSecondary,
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    Text(
+                                        text = "S/${"%.2f".format(producto.total)}",
+                                        modifier = Modifier.weight(0.8f),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandBlack,
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+
+                                HorizontalDivider(
+                                    color = BrandWoodLight.copy(alpha = 0.35f)
+                                )
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+
+                        // ─────────────────────────────
+                        // TOTALES
+                        // ─────────────────────────────
+
+                        Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            color = BrandWoodMedium
-                        )
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { mostrarEditDialogo = false }) {
-                        Text("Cerrar")
+                            shape = RoundedCornerShape(18.dp),
+                            color = BrandWoodLight.copy(alpha = 0.18f)
+                        ) {
+
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+
+                                SummaryRow(
+                                    label = "Descuento",
+                                    value = "- S/${"%.2f".format(totalDescuento)}",
+                                    valueColor = BrandTextSecondary
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                SummaryRow(
+                                    label = "Total",
+                                    value = "S/${"%.2f".format(venta.totalGen)}",
+                                    labelSize = 18.sp,
+                                    valueSize = 20.sp,
+                                    labelWeight = FontWeight.Bold,
+                                    valueWeight = FontWeight.Bold,
+                                    valueColor = BrandBlack
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                SummaryRow(
+                                    label = "Ganancia",
+                                    value = "S/${"%.2f".format(venta.ganancia)}",
+                                    valueColor = Color(0xFF2E7D32)
+                                )
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+
+                        // ─────────────────────────────
+                        // BOTÓN
+                        // ─────────────────────────────
+
+                        Button(
+                            onClick = { mostrarEditDialogo = false },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(15.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BrandBlack
+                            )
+                        ) {
+                            Text(
+                                text = "Cerrar",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
-            )
+            }
         }
+
 
         // Dialog: confirmar eliminación de venta
         if (eliminarDialog && ventaSeleccionada != null) {
@@ -746,4 +1117,87 @@ fun textoFechaChip(fecha: LocalDate): String {
         ).replaceFirstChar { it.uppercase() }
     }
 }
+@Composable
+private fun InfoItem(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    label: String,
+    value: String
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(14.dp),
+        color = Color.White.copy(alpha = 0.65f)
+    ) {
+
+        Row(
+            modifier = Modifier.padding(11.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = BrandWoodMedium,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = label,
+                    fontSize = 10.sp,
+                    color = BrandTextSecondary
+                )
+
+                Text(
+                    text = value,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = BrandBlack,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SummaryRow(
+    label: String,
+    value: String,
+    labelSize: TextUnit = 13.sp,
+    valueSize: TextUnit = 13.sp,
+    labelWeight: FontWeight = FontWeight.Normal,
+    valueWeight: FontWeight = FontWeight.SemiBold,
+    valueColor: Color = BrandBlack
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            fontSize = labelSize,
+            fontWeight = labelWeight,
+            color = BrandTextSecondary
+        )
+
+        Text(
+            text = value,
+            fontSize = valueSize,
+            fontWeight = valueWeight,
+            color = valueColor
+        )
+    }
+}
+
 
