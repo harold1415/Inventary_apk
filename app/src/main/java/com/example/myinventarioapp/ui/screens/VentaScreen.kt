@@ -1,6 +1,7 @@
 package com.example.myinventarioapp.ui.screens
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.Store
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,6 +70,7 @@ import java.time.ZoneOffset
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.filled.ReceiptLong
 
 
 
@@ -106,47 +109,11 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     //PARA LA FECHA
     var mostrarDatePicker by remember { mutableStateOf(false) }
-//    val hoy = remember {
-//        Calendar.getInstance().apply {
-//            set(Calendar.HOUR_OF_DAY, 0)
-//            set(Calendar.MINUTE, 0)
-//            set(Calendar.SECOND, 0)
-//            set(Calendar.MILLISECOND, 0)
-//        }
-//    }
-//    var fechaSeleccionada by remember {
-//        mutableLongStateOf(hoy.timeInMillis)
-//    }
+
     var fechaSeleccionada by remember {
         mutableStateOf(LocalDate.now())
     }
 
-
-    // TODO: ViewModel — estas consultas a Firestore deberían estar en VentaListViewModel
-    // usando addSnapshotListener dentro de init{} o en una función cargarVentas()
-//    LaunchedEffect(Unit) {
-//        db.collection("ventas").addSnapshotListener { snapshot, _ ->
-//            snapshot?.let {
-//                ventas = it.documents.mapNotNull { doc ->
-//                    try {
-//                        doc.toObject(Venta::class.java)?.copy(id = doc.id)
-//                    } catch (e: Exception) {
-//                        Log.e("VentaScreen", "Error parseando venta: ${e.message}")
-//                        null
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    // TODO: ViewModel — el filtrado y ordenamiento también debería ir en VentaListViewModel
-//    val ventasFiltro = ventas
-//        .sortedByDescending { it.fecha }
-//        .filter { venta ->
-//            val coincideLocal = selectedLocal.isBlank() ||
-//                    venta.sucursal.equals(selectedLocal, ignoreCase = true)
-//            coincideLocal
-//        }
     val ventasFiltro = ventaViewModel.filtrarVentas(
         ventas = ventas,
         selectedLocal = selectedLocal,
@@ -337,133 +304,173 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                 }
             }
 
-            items(ventasFiltro) { venta ->
-                // Card de venta rediseñada con la paleta de marca
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth().padding(horizontal = 18.dp)
-                        .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
+            if(ventasFiltro.isEmpty()){
+                item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(
+                                horizontal = 24.dp,
+                                vertical = 64.dp
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Fila superior: ID de venta + sucursal
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Top
+                        Icon(
+                            imageVector = Icons.Default.ReceiptLong,
+                            contentDescription = null,
+                            tint = BrandWoodMedium.copy(alpha = 0.75f),
+                            modifier = Modifier.size(52.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "No hay ventas registradas",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = BrandBlack
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "No se encontraron ventas para el período seleccionado.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = BrandTextSecondary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }else{
+                items(ventasFiltro) { venta ->
+                    // Card de venta rediseñada con la paleta de marca
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth().padding(horizontal = 18.dp)
+                            .border(1.dp, BrandWoodLight, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrandWarmWhite),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         ) {
-                            Text(
-                                "Venta #${venta.id.take(6)}",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BrandBlack,
-                                modifier = Modifier.weight(1f)
-                            )
-                            // Chip de sucursal
-                            Surface(
-                                color = BrandWoodLight.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(20.dp)
+                            // Fila superior: ID de venta + sucursal
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Top
                             ) {
                                 Text(
-                                    text = venta.sucursal.ifEmpty { "Sin sucursal" },
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Medium,
-                                    color = BrandTextSecondary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    "Venta #${venta.id.take(6)}",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BrandBlack,
+                                    modifier = Modifier.weight(1f)
                                 )
-                            }
-                        }
-
-                        Spacer(Modifier.height(6.dp))
-
-                        // Datos de la venta
-                        Text(
-                            "Cliente: ${venta.cliente ?: "Sin nombre"}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = BrandTextSecondary
-                        )
-                        Text(
-                            "Vendedor: ${venta.vendedor ?: "Sin nombre"}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = BrandTextSecondary
-                        )
-                        Text(
-                            "Fecha: ${formatFecha(venta.fecha)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = BrandWoodMedium
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-                        HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
-                        Spacer(Modifier.height(4.dp))
-
-                        // Fila de acciones + total
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Total de la venta
-                            Text(
-                                "S/ ${"%.2f".format(venta.totalGen)}",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BrandBlack
-                            )
-
-                            // Botones de acción
-                            Row {
-                                // Ver detalle
-                                IconButton(
-                                    onClick = {
-                                        ventaSeleccionada = venta
-                                        mostrarEditDialogo = true
-                                    },
-                                    modifier = Modifier.size(36.dp)
+                                // Chip de sucursal
+                                Surface(
+                                    color = BrandWoodLight.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(20.dp)
                                 ) {
-                                    Icon(
-                                        Icons.Default.Visibility,
-                                        contentDescription = "Ver",
-                                        tint = BrandWoodMedium,
-                                        modifier = Modifier.size(20.dp)
+                                    Text(
+                                        text = venta.sucursal.ifEmpty { "Sin sucursal" },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Medium,
+                                        color = BrandTextSecondary,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                     )
                                 }
-                                if (userRole == "admin") {
-                                    // Editar
+                            }
+
+                            Spacer(Modifier.height(6.dp))
+
+                            // Datos de la venta
+                            Text(
+                                "Cliente: ${venta.cliente ?: "Sin nombre"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BrandTextSecondary
+                            )
+                            Text(
+                                "Vendedor: ${venta.vendedor ?: "Sin nombre"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BrandTextSecondary
+                            )
+                            Text(
+                                "Fecha: ${formatFecha(venta.fecha)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = BrandWoodMedium
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+                            HorizontalDivider(color = BrandWoodLight.copy(alpha = 0.6f))
+                            Spacer(Modifier.height(4.dp))
+
+                            // Fila de acciones + total
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Total de la venta
+                                Text(
+                                    "S/ ${"%.2f".format(venta.totalGen)}",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = BrandBlack
+                                )
+
+                                // Botones de acción
+                                Row {
+                                    // Ver detalle
                                     IconButton(
                                         onClick = {
-                                            Log.d("VentaScreen", "ID de venta al editar: ${venta.id}")
-                                            ventaViewModel.productosModificados = false
-                                            ventaViewModel.ventaYaCargada = false
-                                            onNavigateToDetailVenta(venta.id)
+                                            ventaSeleccionada = venta
+                                            mostrarEditDialogo = true
                                         },
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = "Editar",
-                                            tint = BrandBlack,
+                                            Icons.Default.Visibility,
+                                            contentDescription = "Ver",
+                                            tint = BrandWoodMedium,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
-                                    // Eliminar
-                                    IconButton(
-                                        onClick = {
-                                            eliminarDialog = true
-                                            ventaSeleccionada = venta
-                                        },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Eliminar",
-                                            tint = StockLowColor,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                    if (userRole == "admin") {
+                                        // Editar
+                                        IconButton(
+                                            onClick = {
+                                                Log.d("VentaScreen", "ID de venta al editar: ${venta.id}")
+                                                ventaViewModel.productosModificados = false
+                                                ventaViewModel.ventaYaCargada = false
+                                                onNavigateToDetailVenta(venta.id)
+                                            },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Edit,
+                                                contentDescription = "Editar",
+                                                tint = BrandBlack,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                        // Eliminar
+                                        IconButton(
+                                            onClick = {
+                                                eliminarDialog = true
+                                                ventaSeleccionada = venta
+                                            },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Eliminar",
+                                                tint = StockLowColor,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -471,98 +478,9 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                     }
                 }
             }
-
             // Espaciado al final de la lista
             item { Spacer(Modifier.height(8.dp)) }
         }
-
-//        // Dialog: ver detalle completo de la venta
-//        if (mostrarEditDialogo && ventaSeleccionada != null) {
-//            Log.d("venta", ":${ventaSeleccionada!!.productos}")
-//            AlertDialog(
-//                onDismissRequest = { mostrarEditDialogo = false },
-//                containerColor = BrandWarmWhite,
-//                title = { Text("Detalle de la venta", color = BrandBlack) },
-//                text = {
-//                    Column {
-//                        Text("Vendedor: ${ventaSeleccionada!!.vendedor ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
-//                        Text("Sucursal: ${ventaSeleccionada!!.sucursal}", fontWeight = FontWeight.Bold)
-//                        Text("Cliente: ${ventaSeleccionada!!.cliente ?: "Sin nombre"}", fontWeight = FontWeight.Bold)
-//                        Text("DNI: ${ventaSeleccionada!!.dni ?: "No registrado"}", fontWeight = FontWeight.Bold)
-//                        Text("Fecha: ${formatFecha(ventaSeleccionada!!.fecha)}", fontWeight = FontWeight.Bold)
-//
-//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
-//
-//                        Text("Productos:", fontWeight = FontWeight.Bold)
-//                        Text(
-//                            "Talla     Cant.    Precio    Desc.   Total  ",
-//                            fontSize = 15.sp,
-//                            color = BrandTextSecondary,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            textAlign = TextAlign.End
-//                        )
-//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
-//
-//                        ventaSeleccionada!!.productos.forEach {
-//                            Column {
-//                                Text("• " + run {
-//                                    val palabras = it.nombre.split(" ")
-//                                    if (palabras.size <= 2 || it.nombre.length <= 35) it.nombre
-//                                    else {
-//                                        val ultimas = palabras.takeLast(2).joinToString(" ")
-//                                        val resto = palabras.dropLast(2).joinToString(" ")
-//                                        val restoCortado = if (resto.length > (25 - ultimas.length - 4))
-//                                            resto.take(25 - ultimas.length - 4) + "..."
-//                                        else resto
-//                                        "$restoCortado $ultimas"
-//                                    }
-//                                })
-//                                val detalle = String.format(
-//                                    "%3s %3dUND %6.2f -%2.2f %6.2f",
-//                                    it.talla, it.cantidad, it.precio, it.descuento, it.total
-//                                )
-//                                Text(
-//                                    text = detalle,
-//                                    fontFamily = FontFamily.Monospace,
-//                                    fontSize = 14.sp,
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    textAlign = TextAlign.End,
-//                                    color = BrandTextSecondary
-//                                )
-//                            }
-//                        }
-//
-//                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = BrandWoodLight)
-//
-//                        val totalDescuento = ventaSeleccionada!!.productos.sumOf { it.descuento }
-//                        Text(
-//                            text = "Descuento: S/${totalDescuento}",
-//                            textAlign = TextAlign.End,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            color = BrandTextSecondary
-//                        )
-//                        Text(
-//                            text = "Total: S/${"%.2f".format(ventaSeleccionada!!.totalGen)}",
-//                            textAlign = TextAlign.End,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            fontWeight = FontWeight.Bold,
-//                            color = BrandBlack
-//                        )
-//                        Text(
-//                            text = "Ganancia: S/${"%.2f".format(ventaSeleccionada!!.ganancia)}",
-//                            textAlign = TextAlign.End,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            color = BrandWoodMedium
-//                        )
-//                    }
-//                },
-//                confirmButton = {
-//                    TextButton(onClick = { mostrarEditDialogo = false }) {
-//                        Text("Cerrar")
-//                    }
-//                }
-//            )
-//        }
 
         // Dialog: ver detalle completo de la venta
         if (mostrarEditDialogo && ventaSeleccionada != null) {

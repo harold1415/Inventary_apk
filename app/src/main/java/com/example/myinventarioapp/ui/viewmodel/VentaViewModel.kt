@@ -127,7 +127,7 @@ class VentaViewModel : ViewModel() {
             _ventasTo.value = lista
         }
     }
-
+    //FILTRAR VENTAS POR FECHA
     fun filtrarVentas(
         ventas: List<Venta>,
         selectedLocal: String,
