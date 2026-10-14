@@ -311,34 +311,53 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                             .fillMaxWidth()
                             .padding(
                                 horizontal = 24.dp,
-                                vertical = 64.dp
+                                vertical = 48.dp
                             ),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ReceiptLong,
-                            contentDescription = null,
-                            tint = BrandWoodMedium.copy(alpha = 0.75f),
-                            modifier = Modifier.size(52.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "No hay ventas registradas",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
+                        Box(
+                            modifier = Modifier.size(112.dp).background(
+                                color = BrandWoodMedium.copy(alpha = 0.12f),
+                                shape = CircleShape
                             ),
-                            color = BrandBlack
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
+                            contentAlignment = Alignment.Center
+                        ){
+                            Box(
+                                modifier = Modifier.size(78.dp).background(
+                                    color = BrandWoodMedium.copy(alpha = 0.12f),
+                                    shape = RoundedCornerShape(22.dp)
+                                ),
+                                contentAlignment = Alignment.Center
+                            ){
+                                Icon(
+                                    imageVector = Icons.Default.ReceiptLong,
+                                    contentDescription = null,
+                                    tint = BrandWoodMedium,
+                                    modifier = Modifier.size(42.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         Text(
-                            text = "No se encontraron ventas para el período seleccionado.",
+                            text = "¡Aún no hay ventas!",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = BrandBlack,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Text(
+                            text = "Tus ventas aparecerán aquí cuando registres " +
+                                    "tu primera operación.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = BrandTextSecondary,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp,
+                            modifier = Modifier.padding(horizontal = 12.dp)
                         )
                     }
                 }
