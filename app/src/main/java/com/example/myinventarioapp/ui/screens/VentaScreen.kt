@@ -71,8 +71,8 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.ReceiptLong
-
-
+import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 
 fun formatFecha(fecha: Timestamp?): String {
     return if (fecha != null) {
@@ -98,6 +98,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
     // Estados de UI — estos pueden quedarse en el Composable
     var mostrarEditDialogo by remember { mutableStateOf(false) }
+    var typeSale by remember {mutableStateOf(false)}
     var ventaSeleccionada by remember { mutableStateOf<Venta?>(null) }
     var eliminarDialog by remember { mutableStateOf(false) }
 
@@ -138,9 +139,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    ventaViewModel.clearProductos()
-                    ventaViewModel.resetProduct()
-                    onNavigateToDetailVenta("New")
+                    typeSale = true
                 },
                 containerColor = BrandBlack,
                 contentColor = BrandWarmWhite
@@ -286,7 +285,6 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
 
                                     // Sucursales de Firebase
                                     locales.forEach { local ->
-
                                         DropdownMenuItem(
                                             text = {
                                                 Text(local.nombre)
@@ -856,7 +854,150 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
             }
         }
 
+        if (typeSale) {
+            AlertDialog(
+                onDismissRequest = {
+                    typeSale = false
+                },
+                containerColor = BrandWarmWhite,
+                shape = RoundedCornerShape(28.dp),
+                title = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Nueva venta",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
 
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            text = "Selecciona una modalidad",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Venta normal
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    typeSale = false
+                                    ventaViewModel.clearProductos()
+                                    ventaViewModel.limpiarVenta()
+                                    onNavigateToDetailVenta("New")
+
+                                    // TODO: abrir el flujo de venta normal
+                                },
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.White
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                Color.LightGray.copy(alpha = 0.4f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ReceiptLong,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = StockLowColor
+                                )
+
+                                Spacer(Modifier.width(14.dp))
+
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        "Venta normal",
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        "Agrega productos paso a paso",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Gray
+                                    )
+                                }
+
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.Gray
+                                )
+                            }
+                        }
+
+                        // Venta rápida
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    typeSale = false
+
+                                    // TODO: navegar a VentaRapidaScreen
+                                },
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = BrandBlack
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.QrCodeScanner,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = Color.White
+                                )
+
+                                Spacer(Modifier.width(14.dp))
+
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        "Venta rápida",
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        "Escanea y agrega al instante",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
+
+                                Icon(
+                                    imageVector =
+                                        Icons.AutoMirrored.Outlined.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {}
+            )
+        }
         // Dialog: confirmar eliminación de venta
         if (eliminarDialog && ventaSeleccionada != null) {
             AlertDialog(
