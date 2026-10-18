@@ -88,7 +88,7 @@ fun formatFecha(fecha: Timestamp?): String {
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: VentaViewModel, userRole:String) {
+fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, onNavigateToQuickSale: (String) ->Unit,ventaViewModel: VentaViewModel, userRole:String) {
 
     // Controla los íconos de la Status Bar — negro con íconos blancos
     AjustarBarraEstado(darkIcons = false)
@@ -948,7 +948,7 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
                                 .fillMaxWidth()
                                 .clickable {
                                     typeSale = false
-
+                                    onNavigateToQuickSale("New")
                                     // TODO: navegar a VentaRapidaScreen
                                 },
                             shape = RoundedCornerShape(18.dp),
@@ -1129,57 +1129,6 @@ fun VentaScreen(onNavigateToDetailVenta: (String) -> Unit, ventaViewModel: Venta
     }
 }
 
-// TODO: ViewModel — borrarVenta() debería estar en VentaListViewModel
-//fun borrarVenta(venta: Venta, onComplete: () -> Unit) {
-//    val db = FirebaseFirestore.getInstance()
-//    val batch = db.batch()
-//
-//    venta.productos.forEach { p ->
-//
-//        val ref = db.collection("productos").document(p.productoId)
-//
-//        batch.update(
-//            ref,
-//            "stock",
-//            FieldValue.increment(p.cantidad)
-//        )
-//    }
-//
-//    val ventaRef = db.collection("ventas").document(venta.id)
-//    batch.delete(ventaRef)
-//
-//    batch.commit()
-//        .addOnSuccessListener {
-//            onComplete()
-//        }
-//        .addOnFailureListener { e ->
-//            Log.e(
-//                "VentaScreen",
-//                "Error borrando venta: ${e.message}"
-//            )
-//        }
-//}
-
-//fun textoFechaChip(timestamp: Long): String {
-//    val calendario = Calendar.getInstance()
-//    val seleccionada = Calendar.getInstance().apply {
-//        timeInMillis = timestamp
-//    }
-//
-//    val esHoy =
-//        calendario.get(Calendar.YEAR) == seleccionada.get(Calendar.YEAR) &&
-//                calendario.get(Calendar.DAY_OF_YEAR) == seleccionada.get(Calendar.DAY_OF_YEAR)
-//
-//    return if (esHoy) {
-//        "Hoy"
-//    } else {
-//        SimpleDateFormat(
-//            "dd MMM",
-//            Locale("es", "ES")
-//        ).format(timestamp)
-//            .replaceFirstChar { it.uppercase() }
-//    }
-//}
 fun textoFechaChip(fecha: LocalDate): String {
 
     val hoy = LocalDate.now()

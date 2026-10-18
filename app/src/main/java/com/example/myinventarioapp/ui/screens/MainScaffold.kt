@@ -39,7 +39,8 @@ fun MainScaffold(
         "scannerSearch",
         "SearchProducts",
         "productsventa",
-        "scanner"
+        "scanner",
+        "saleQuick"
     )
     val hideBottomBar = hideBottomBarRoutes.any { route ->
         currentRoute?.startsWith(route) == true
@@ -121,8 +122,35 @@ fun MainScaffold(
                         onNavigateToDetailVenta = { ventaId ->
                             innerNavController.navigate("detailventa/$ventaId")
                         },
+                        onNavigateToQuickSale ={ ventaid ->
+                            innerNavController.navigate("saleQuick/$ventaid")
+                        },
                         ventaViewModel = ventaViewModel,
                         userRole = userRole
+                    )
+                }
+                composable(
+                    "saleQuick/{ventaid}",
+                    listOf(
+                        navArgument("ventaid"){
+                            type = NavType.StringType
+                            defaultValue ="New"
+                        }
+                    )
+                ){
+                    backStackEntry ->
+                    val ventaId = backStackEntry.arguments?.getString("ventaid") ?: "New"
+                    VentaRapidaScreen(
+                        onVentaScreen = {
+//                            innerNavController.popBackStack()
+                            innerNavController.navigate("ventas"){
+                                popUpTo("ventas"){inclusive = false}
+                                launchSingleTop = true
+                            }
+                        },
+                        ventaViewModel = ventaViewModel,
+                        ventaId = ventaId,
+                        navController = innerNavController
                     )
                 }
 
